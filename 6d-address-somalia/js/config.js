@@ -1,5 +1,5 @@
 // This file holds configuration data.
-export const GOOGLE_MAPS_API_KEY = "";
+export const GOOGLE_MAPS_API_KEY = "YOUR_GOOGLE_MAPS_API_KEY_HERE";
 
 // This is our authoritative source for UI dropdowns.
 export const somaliAdministrativeHierarchy = {
