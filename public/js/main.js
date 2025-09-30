@@ -3,11 +3,13 @@
 import { GOOGLE_MAPS_API_KEY, somaliAdministrativeHierarchy } from './config.js';
 import { loadGoogleMapsAPI } from './utils.js';
 import * as MapCore from './map-core.js';
+import { setupRecaptcha, sendOtp, verifyOtp } from './firebase.js';
 
 // --- State ---
 let map, geocoder, placesService;
 let drawnMapObjects = [];
 let currentAddress = null;
+let confirmationResult = null; // To store the Firebase confirmation result
 
 // --- DOM Elements ---
 const DOM = {
@@ -29,10 +31,13 @@ const DOM = {
     regDistrict: document.getElementById('reg-district'),
     regNeighborhood: document.getElementById('reg-neighborhood'),
     regNeighborhoodManualWrapper: document.getElementById('reg-neighborhood-manual-wrapper'),
+    // OTP Modal Elements
+    otpModalOverlay: document.getElementById('otp-modal-overlay'),
+    otpModal: document.getElementById('otp-modal'),
+    otpForm: document.getElementById('otp-form'),
+    otpPhoneDisplay: document.getElementById('otp-phone-display'),
+    otpError: document.getElementById('otp-error'),
 };
-
-// --- Helper Functions ---
-const normalize = (str) => (str || '').toLowerCase().replace(/ region| city| district/g, '').trim();
 
 async function init() {
     try {
@@ -40,6 +45,7 @@ async function init() {
         map = new google.maps.Map(DOM.mapElement, { center: { lat: 2.0469, lng: 45.3182 }, zoom: 13, disableDefaultUI: true, zoomControl: true, clickableIcons: false, draggableCursor: 'default' });
         geocoder = new google.maps.Geocoder();
         placesService = new google.maps.places.PlacesService(map);
+        setupRecaptcha('recaptcha-container');
         addEventListeners();
     } catch (error) {
         console.error("Initialization Error:", error);
@@ -53,26 +59,12 @@ function addEventListeners() {
     DOM.registerThisAddressBtn.addEventListener('click', handleShowRegistrationSheet);
     DOM.closeSheetBtn.addEventListener('click', closeRegistrationSheet);
     DOM.bottomSheetOverlay.addEventListener('click', closeRegistrationSheet);
-    // Cascading dropdowns are now manually triggered, but we keep listeners for user changes
-    DOM.regRegion.addEventListener('change', () => {
-        const regionKey = DOM.regRegion.value;
-        populateCities(regionKey);
-        populateDistricts(regionKey, ''); // Clear districts
-        populateNeighborhoods(regionKey, '', ''); // Clear neighborhoods
-    });
-    DOM.regCity.addEventListener('change', () => {
-        const regionKey = DOM.regRegion.value;
-        const cityKey = DOM.regCity.value;
-        populateDistricts(regionKey, cityKey);
-        populateNeighborhoods(regionKey, cityKey, ''); // Clear neighborhoods
-    });
-    DOM.regDistrict.addEventListener('change', () => {
-        populateNeighborhoods(DOM.regRegion.value, DOM.regCity.value, DOM.regDistrict.value);
-    });
-    DOM.regNeighborhood.addEventListener('change', () => {
-        DOM.regNeighborhoodManualWrapper.classList.toggle('hidden', DOM.regNeighborhood.value !== 'Other');
-    });
+    DOM.regRegion.addEventListener('change', () => populateCities(DOM.regRegion.value));
+    DOM.regCity.addEventListener('change', () => populateDistricts(DOM.regRegion.value, DOM.regCity.value));
+    DOM.regDistrict.addEventListener('change', () => populateNeighborhoods(DOM.regRegion.value, DOM.regCity.value, DOM.regDistrict.value));
+    DOM.regNeighborhood.addEventListener('change', () => DOM.regNeighborhoodManualWrapper.classList.toggle('hidden', DOM.regNeighborhood.value !== 'Other'));
     DOM.registrationForm.addEventListener('submit', handleRegistrationSubmit);
+    DOM.otpForm.addEventListener('submit', handleOtpSubmit);
 }
 
 function openRegistrationSheet() {
@@ -92,6 +84,79 @@ function closeRegistrationSheet() {
         DOM.bottomSheetModal.classList.add('hidden');
     }, 300);
 }
+
+function toggleOtpModal(show = false, phoneNumber = '') {
+    DOM.otpModalOverlay.classList.toggle('is-open', show);
+    DOM.otpModal.classList.toggle('is-open', show);
+    DOM.otpModalOverlay.classList.toggle('hidden', !show);
+    DOM.otpModal.classList.toggle('hidden', !show);
+    if (show) {
+        DOM.otpPhoneDisplay.textContent = phoneNumber;
+        DOM.otpError.classList.add('hidden');
+        document.getElementById('otp-input').value = '';
+    }
+}
+
+async function handleRegistrationSubmit(event) {
+    event.preventDefault();
+    const form = event.target;
+    const submitButton = form.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
+    submitButton.textContent = 'Sending Code...';
+
+    const phoneNumber = `+252${document.getElementById('reg-phone').value}`;
+
+    try {
+        confirmationResult = await sendOtp(phoneNumber);
+        console.log("OTP sent. Confirmation result stored.");
+        closeRegistrationSheet();
+        toggleOtpModal(true, phoneNumber);
+    } catch (error) {
+        console.error("Error sending OTP:", error);
+        alert("Failed to send verification code. Please check the phone number and try again.");
+    } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Verify Phone Number';
+    }
+}
+
+async function handleOtpSubmit(event) {
+    event.preventDefault();
+    const form = event.target;
+    const submitButton = form.querySelector('button[type="submit"]');
+    const otpCode = document.getElementById('otp-input').value;
+    
+    if (!confirmationResult || !/^\d{6}$/.test(otpCode)) {
+        DOM.otpError.textContent = "Please enter a valid 6-digit code.";
+        DOM.otpError.classList.remove('hidden');
+        return;
+    }
+
+    submitButton.disabled = true;
+    submitButton.textContent = 'Verifying...';
+    DOM.otpError.classList.add('hidden');
+
+    try {
+        const result = await verifyOtp(confirmationResult, otpCode);
+        const user = result.user;
+        console.log("Phone number verified! User UID:", user.uid);
+        
+        toggleOtpModal(false);
+        alert(`Registration successful! Welcome, user ${user.uid}. Next step: Save data to Firestore and show dashboard.`);
+        // Here we will save data to Firestore and transition to the dashboard view.
+
+    } catch (error) {
+        console.error("Error verifying OTP:", error);
+        DOM.otpError.textContent = "The code you entered is incorrect. Please try again.";
+        DOM.otpError.classList.remove('hidden');
+    } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Verify & Proceed';
+    }
+}
+
+// --- All other functions (processLocation, populateDropdowns, etc.) are unchanged ---
+const normalize = (str) => (str || '').toLowerCase().replace(/ region| city| district/g, '').trim();
 
 function handleFindMyLocation() {
     if (!navigator.geolocation) return alert("Geolocation is not supported.");
@@ -124,11 +189,8 @@ function handleShowRegistrationSheet() {
     openRegistrationSheet();
 }
 
-// --- REFACTORED AND FIXED: Direct, Robust Form Population ---
 function populateRegistrationForm() {
     DOM.regCodeDisplay.textContent = currentAddress.sixDCode;
-
-    // Directly orchestrate the population of each dropdown
     const regionKey = populateRegions(currentAddress.region);
     const cityKey = populateCities(regionKey, currentAddress.city);
     const districtKey = populateDistricts(regionKey, cityKey, currentAddress.district);
@@ -147,12 +209,10 @@ function findKeyByAlias(obj, valueToMatch) {
 function populateRegions(selectedValue) {
     DOM.regRegion.innerHTML = '<option value="">Select Region</option>';
     const matchedKey = findKeyByAlias(somaliAdministrativeHierarchy, selectedValue);
-
     Object.keys(somaliAdministrativeHierarchy).forEach(key => {
         const region = somaliAdministrativeHierarchy[key];
         DOM.regRegion.add(new Option(region.displayName, key));
     });
-
     if (matchedKey) {
         DOM.regRegion.value = matchedKey;
     }
@@ -162,15 +222,12 @@ function populateRegions(selectedValue) {
 function populateCities(regionKey, selectedValue) {
     DOM.regCity.innerHTML = '<option value="">Select City</option>';
     if (!regionKey) return '';
-
     const cities = somaliAdministrativeHierarchy[regionKey]?.cities || {};
     const matchedKey = findKeyByAlias(cities, selectedValue);
-
     Object.keys(cities).forEach(key => {
         const city = cities[key];
         DOM.regCity.add(new Option(city.displayName, key));
     });
-
     if (matchedKey) {
         DOM.regCity.value = matchedKey;
     }
@@ -180,15 +237,12 @@ function populateCities(regionKey, selectedValue) {
 function populateDistricts(regionKey, cityKey, selectedValue) {
     DOM.regDistrict.innerHTML = '<option value="">Select District</option>';
     if (!regionKey || !cityKey) return '';
-
     const districts = somaliAdministrativeHierarchy[regionKey]?.cities?.[cityKey]?.districts || {};
     const matchedKey = findKeyByAlias(districts, selectedValue);
-
     Object.keys(districts).forEach(key => {
         const district = districts[key];
         DOM.regDistrict.add(new Option(district.displayName, key));
     });
-
     if (matchedKey) {
         DOM.regDistrict.value = matchedKey;
     }
@@ -204,12 +258,6 @@ function populateNeighborhoods(regionKey, cityKey, districtKey) {
     const neighborhoods = somaliAdministrativeHierarchy[regionKey]?.cities?.[cityKey]?.districts?.[districtKey]?.neighborhoods || [];
     neighborhoods.forEach(n => DOM.regNeighborhood.add(new Option(n, n)));
     DOM.regNeighborhood.add(new Option("Other...", "Other"));
-}
-// --- END OF REFACTORED SECTION ---
-
-async function handleRegistrationSubmit(event) {
-    event.preventDefault();
-    alert("Form Submitted. Next step: Trigger Firebase OTP flow here.");
 }
 
 function getReverseGeocode(latLng) { return new Promise((resolve, reject) => geocoder.geocode({ location: latLng }, (results, status) => (status === 'OK' && results[0]) ? resolve(results[0].address_components) : reject(new Error(status)))); }

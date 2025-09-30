@@ -103,6 +103,26 @@
 </div>
     </div>
 
-    <script src="js/main.js" type="module"></script>
+    <!-- ADD THESE NEW ELEMENTS -->
+    <div id="recaptcha-container"></div>
+
+    <div id="otp-modal-overlay" class="hidden"></div>
+    <div id="otp-modal" class="hidden">
+        <div class="modal-header">
+            <h4>Enter Verification Code</h4>
+        </div>
+        <div class="modal-content">
+            <p>We've sent a 6-digit code to <strong id="otp-phone-display"></strong>.</p>
+            <form id="otp-form">
+                <input type="text" id="otp-input" maxlength="6" pattern="\d{6}" required autocomplete="one-time-code" inputmode="numeric">
+                <button type="submit" class="btn btn-primary">Verify & Proceed</button>
+            </form>
+            <div id="otp-error" class="error-message hidden"></div>
+        </div>
+    </div>
+    <!-- END OF NEW ELEMENTS -->
+
+    <script src="./js/firebase.js" type="module"></script>
+    <script src="./js/main.js" type="module"></script>
 </body>
 </html>
