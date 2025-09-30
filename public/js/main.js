@@ -33,7 +33,18 @@ const DOM = {
     // ... (rest of form selectors)
 };
 
-async function init() { /* ... unchanged ... */ }
+async function init() {
+    try {
+        await loadGoogleMapsAPI(GOOGLE_MAPS_API_KEY);
+        map = new google.maps.Map(DOM.mapElement, { center: { lat: 2.0469, lng: 45.3182 }, zoom: 13, disableDefaultUI: true, zoomControl: true, clickableIcons: false, draggableCursor: 'default' });
+        geocoder = new google.maps.Geocoder();
+        placesService = new google.maps.places.PlacesService(map);
+        addEventListeners();
+    } catch (error) {
+        console.error("Initialization Error:", error);
+        document.body.innerHTML = `<div>Error: Could not load the map.</div>`;
+    }
+}
 
 function addEventListeners() {
     map.addListener('click', (e) => processLocation(e.latLng));
@@ -129,7 +140,50 @@ function handleRecenterMap() {
     DOM.recenterBtn.classList.add('hidden');
 }
 
-// --- All other functions (init, geocoding, form population, etc.) remain the same ---
-// ... (paste the rest of your working main.js functions here)
+function openRegistrationSheet() {
+    DOM.bottomSheetOverlay.classList.remove('hidden');
+    DOM.bottomSheetModal.classList.remove('hidden');
+    setTimeout(() => {
+        DOM.bottomSheetOverlay.classList.add('is-open');
+        DOM.bottomSheetModal.classList.add('is-open');
+    }, 10);
+}
+
+function closeRegistrationSheet() {
+    DOM.bottomSheetOverlay.classList.remove('is-open');
+    DOM.bottomSheetModal.classList.remove('is-open');
+    setTimeout(() => {
+        DOM.bottomSheetOverlay.classList.add('hidden');
+        DOM.bottomSheetModal.classList.add('hidden');
+    }, 300);
+}
+
+function handleShowRegistrationSheet() {
+    if (!currentAddress) return alert("Please select a location on the map first.");
+    // populateRegistrationForm();
+    openRegistrationSheet();
+}
+
+const getReverseGeocode = (latLng) => new Promise((res, rej) => geocoder.geocode({ location: latLng }, (results, status) => status === 'OK' ? res(results) : rej(status)));
+const getPlaceDetails = (latLng) => new Promise((res, rej) => placesService.nearbySearch({ location: latLng, radius: 50, rankby: 'distance' }, (results, status) => status === 'OK' ? res(results) : rej(status)));
+
+function parseAddressComponents(geocodeResults, placeResults) {
+    const geo = geocodeResults[0];
+    const place = placeResults[0];
+    let district = place?.name;
+    let region = geo?.address_components.find(c => c.types.includes('administrative_area_level_1'))?.long_name;
+    return { district, region };
+}
+
+function switchInfoPanelView(view) {
+    ['initial', 'loading', 'address'].forEach(v => DOM[`infoPanel${v.charAt(0).toUpperCase() + v.slice(1)}`].classList.remove('active'));
+    DOM[`infoPanel${view.charAt(0).toUpperCase() + view.slice(1)}`].classList.add('active');
+}
+
+function animateToLocation(map, latLng, onComplete) {
+    map.panTo(latLng);
+    map.setZoom(18);
+    setTimeout(() => onComplete(latLng), 500);
+}
 
 document.addEventListener('DOMContentLoaded', init);
