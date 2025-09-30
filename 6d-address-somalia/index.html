@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>6D Address Somalia</title>
+    <link rel="stylesheet" href="./css/main.css">
+</head>
+<body>
+    <main>
+        <div id="map"></div>
+        
+        <a href="#" id="logo-container">
+            <img src="./assets/logo-somalia.png" alt="6D Address Somalia Logo">
+        </a>
+
+        <!-- The Floating Info Panel for map interactions -->
+        <div id="info-panel">
+            <!-- Initial State -->
+            <div id="info-panel-initial" class="info-panel-view active">
+                <button id="find-my-location-btn" class="btn">Find My 6D Address</button>
+            </div>
+            <!-- Loading State -->
+            <div id="info-panel-loading" class="info-panel-view">
+                <div class="spinner-small"></div>
+                <span>Locating...</span>
+            </div>
+            <!-- Address Display State -->
+            <div id="info-panel-address" class="info-panel-view">
+                <div class="address-details">
+                    <div class="code-display"></div>
+                    <div class="location-text"></div>
+                </div>
+                <button id="register-this-address-btn" class="btn btn-primary">Register This Address</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- The Primary Mobile Navigation -->
+    <nav id="bottom-nav">
+        <a href="#" class="nav-link active" data-view="map">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span>Map</span>
+        </a>
+        <a href="#" class="nav-link" data-view="dashboard">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+            <span>Dashboard</span>
+        </a>
+        <a href="#" class="nav-link" data-view="settings">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 0 2l-.15.08a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1 0-2l.15.08a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span>Settings</span>
+        </a>
+    </nav>
+    
+    <!-- The Bottom Sheet for Registration -->
+    <div id="bottom-sheet-overlay" class="hidden"></div>
+    <div id="bottom-sheet-modal" class="hidden">
+        <div class="sheet-header">
+        <h4>Register This Address</h4>
+        <button id="close-sheet-btn" title="Close">&times;</button>
+    </div>
+    <div class="sheet-content">
+        <div class="form-group static-display">
+            <label>6D Address Code</label>
+            <div id="reg-6d-code-display" class="code-display"></div>
+        </div>
+        <form id="registration-form">
+            <div class="form-group">
+                <label for="reg-name">Full Name</label>
+                <input type="text" id="reg-name" required minlength="3">
+            </div>
+            <div class="form-group">
+                <label for="reg-phone">Phone Number</label>
+                <div class="phone-input-wrapper">
+                    <span>+252</span>
+                    <input type="tel" id="reg-phone" required pattern="^[6-9]\d{7}$" placeholder="61xxxxxxx">
+                </div>
+            </div>
+            <hr class="form-divider">
+            <div class="form-group">
+                <label for="reg-region">Region</label>
+                <select id="reg-region" disabled></select> <!-- Disabled by default -->
+            </div>
+            <div class="form-group">
+                <label for="reg-city">City</label>
+                <select id="reg-city" required></select>
+            </div>
+            <div class="form-group">
+                <label for="reg-district">District</label>
+                <select id="reg-district" required></select>
+            </div>
+            <div class="form-group">
+                <label for="reg-neighborhood">Neighborhood</label>
+                <select id="reg-neighborhood"></select>
+            </div>
+            <div id="reg-neighborhood-manual-wrapper" class="form-group hidden">
+                <label for="reg-neighborhood-manual">Enter Neighborhood Name</label>
+                <input type="text" id="reg-neighborhood-manual">
+            </div>
+            <button type="submit" class="btn btn-primary">Verify Phone Number</button>
+        </form>
+    </div>
+</div>
+    </div>
+
+    <script src="./js/main.js" type="module"></script>
+</body>
+</html>

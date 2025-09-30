@@ -1,0 +1,12 @@
+# VS Code editor settings
+.vscode/
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env*
+
+# Node modules (in case you ever add a build tool)
+node_modules/

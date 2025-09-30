@@ -1,0 +1,243 @@
+:root {
+    --background-color: #0c111f;
+    --component-bg: #111827;
+    --border-color: rgba(122, 162, 255, 0.15);
+    --primary-blue: #007aff;
+    --text-primary: #f9fafb;
+    --text-secondary: #9ca3af;
+}
+
+/* FIX: Apply a better box model to all elements */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-primary);
+    overflow: hidden;
+}
+
+main {
+    height: 100vh;
+    width: 100vw;
+    position: relative;
+}
+
+#map {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* --- Floating Logo --- */
+#logo-container {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 500; /* Below modals but above the map */
+    
+    /* The "floating island" effect */
+    background-color: rgba(17, 24, 39, 0.6); /* --component-bg with transparency */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px); /* For Safari support */
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 8px;
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    transition: transform 0.2s ease;
+}
+
+    #logo-container:hover {
+        transform: scale(1.05);
+    }
+
+    #logo-container img {
+        display: block;
+        width: 40px;
+        height: 40px;
+        object-fit: contain;
+    }
+    @media (min-width: 768px) {
+        
+        /* Make the logo larger on screens tablet-sized and up */
+        #logo-container {
+            top: 24px;
+            left: 24px;
+            padding: 12px;
+            border-radius: 16px;
+        }
+
+        #logo-container img {
+            width: 50px;
+            height: 50px;
+        }
+
+    }
+
+/* --- Bottom Navigation Bar --- */
+#bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background-color: var(--component-bg);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 1000;
+}
+
+.nav-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.75rem;
+    transition: color 0.2s ease;
+}
+
+.nav-link.active {
+    color: var(--primary-blue);
+}
+
+/* --- Info Panel --- */
+#info-panel {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 400px;
+    background-color: var(--component-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    z-index: 500;
+    overflow: hidden;
+}
+
+.info-panel-view {
+    display: none;
+    padding: 1rem;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.info-panel-view.active {
+    display: flex;
+}
+
+.spinner-small {
+    border: 3px solid var(--border-color);
+    border-left-color: var(--primary-blue);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 12px;
+    border: 1px solid var(--primary-blue);
+    background-color: transparent;
+    color: var(--primary-blue);
+    cursor: pointer;
+}
+
+.btn.btn-primary {
+    background-color: var(--primary-blue);
+    color: var(--text-primary);
+}
+
+/* --- Bottom Sheet & Registration Form Styles --- */
+#bottom-sheet-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none; /* FIX: Allow clicks through when hidden */
+}
+#bottom-sheet-overlay.is-open { opacity: 1; pointer-events: auto; }
+
+#bottom-sheet-modal {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-height: 90vh;
+    background-color: var(--component-bg);
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    z-index: 2000;
+    transform: translateY(100%);
+    transition: transform 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+}
+#bottom-sheet-modal.is-open { transform: translateY(0); }
+
+.sheet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+.sheet-header h4 { margin: 0; font-size: 1.2rem; }
+#close-sheet-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 2rem;
+    cursor: pointer;
+}
+
+.sheet-content {
+    padding: 1.5rem;
+    overflow-y: auto; /* FIX: Make the form content scrollable */
+}
+
+.form-group { margin-bottom: 1.25rem; }
+.form-group label { display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-weight: 500; }
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+.form-group select:disabled { background-color: #2a3447; opacity: 0.7; }
+
+.phone-input-wrapper { display: flex; align-items: center; background-color: var(--background-color); border: 1px solid var(--border-color); border-radius: 8px; }
+.phone-input-wrapper span { padding: 12px; border-right: 1px solid var(--border-color); }
+.phone-input-wrapper input { border: none; flex-grow: 1; }
+
+.form-divider { border: 0; height: 1px; background-color: var(--border-color); margin: 2rem 0; }
+.static-display .code-display { margin-top: 0.5rem; }
+
+.hidden { display: none !important; }
