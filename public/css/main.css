@@ -282,3 +282,83 @@ main {
     box-sizing: border-box; /* Prevents the input from overflowing its container */
 }
 .error-message { color: #ff4d4d; text-align: center; font-size: 0.9rem; }
+
+/* --- Polished Info Panel Styles --- */
+#info-panel-address {
+    gap: 0.75rem; /* Reduced gap for a tighter layout */
+}
+
+.info-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.code-pill {
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 999px; /* Creates the pill shape */
+    padding: 8px 16px;
+    font-size: 1.25rem;
+    font-weight: bold;
+    font-family: 'Courier New', Courier, monospace;
+    color: var(--text-secondary); /* For the dashes */
+}
+
+.code-part-red { color: #D32F2F; }
+.code-part-green { color: #388E3C; }
+.code-part-blue { color: #1976D2; }
+
+.info-panel-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.icon-btn {
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+.icon-btn:hover {
+    background-color: var(--hover-bg);
+    color: var(--text-primary);
+}
+
+.address-text {
+    text-align: center;
+    width: 100%;
+}
+.address-text p {
+    margin: 0;
+    line-height: 1.4;
+}
+#address-district {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+#address-region {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+#gps-accuracy-display {
+    width: 100%;
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    padding: 4px 8px;
+    background-color: rgba(0, 122, 255, 0.1);
+    border: 1px solid rgba(0, 122, 255, 0.2);
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+}
