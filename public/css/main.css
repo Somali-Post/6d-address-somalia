@@ -119,7 +119,7 @@ main {
 #info-panel {
     position: absolute;
      /* FIX: Position it 20px ABOVE the navigation bar, dynamically */
-    bottom: calc(var(--bottom-nav-height) + 30px);
+    bottom: calc(var(--bottom-nav-height) + 80px);
     left: 50%;
     transform: translateX(-50%);
     width: 90%;
