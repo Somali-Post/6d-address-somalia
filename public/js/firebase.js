@@ -5,12 +5,13 @@ import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.g
 // Your web app's Firebase configuration
 // IMPORTANT: In a real app, these would be loaded from environment variables, not hardcoded.
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyApaC8Gq81Pm0JpXX4yLFtQueDy8yp9UsE",
+  authDomain: "d-address-455414.firebaseapp.com",
+  projectId: "d-address-455414",
+  storageBucket: "d-address-455414.firebasestorage.app",
+  messagingSenderId: "457536871267",
+  appId: "1:457536871267:web:9ab1625ec88d0c034b5156",
+  measurementId: "G-LDM42CFG11"
 };
 
 // Initialize Firebase
