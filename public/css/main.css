@@ -85,11 +85,14 @@ main {
 
 /* --- Bottom Navigation Bar --- */
 #bottom-nav {
+    /* DEFINE a variable for the nav bar's height */
+    --bottom-nav-height: 60px; 
+
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 60px;
+    height: var(--bottom-nav-height);
     background-color: var(--component-bg);
     border-top: 1px solid var(--border-color);
     display: flex;
@@ -117,7 +120,8 @@ main {
 /* --- Info Panel --- */
 #info-panel {
     position: absolute;
-    bottom: 80px;
+     /* FIX: Position it 20px ABOVE the navigation bar, dynamically */
+    bottom: calc(var(--bottom-nav-height) + 20px);
     left: 50%;
     transform: translateX(-50%);
     width: 90%;
