@@ -1,7 +1,7 @@
 // This script runs on the Netlify server during the build process.
 const fs = require('fs');
 
-const configPath = './js/config.js';
+const configPath = './public/js/config.js';
 const apiKey = process.env.GOOGLE_MAPS_API_KEY;
 
 if (!apiKey) {
