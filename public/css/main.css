@@ -5,6 +5,7 @@
     --primary-blue: #007aff;
     --text-primary: #f9fafb;
     --text-secondary: #9ca3af;
+    --bottom-nav-height: 60px; /* ADD THIS LINE */
 }
 
 /* FIX: Apply a better box model to all elements */
@@ -85,9 +86,6 @@ main {
 
 /* --- Bottom Navigation Bar --- */
 #bottom-nav {
-    /* DEFINE a variable for the nav bar's height */
-    --bottom-nav-height: 60px; 
-
     position: fixed;
     bottom: 0;
     left: 0;
