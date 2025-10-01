@@ -83,9 +83,9 @@ export function updateDynamicGrid(map, gridLinesRef) {
     const ne = bounds.getNorthEast();
     const sw = bounds.getSouthWest();
     const gridStyle = {
-    strokeColor: '#FFFFFF',    // FIX: Changed back to white
-    strokeOpacity: 0.15,     // FIX: Made subtle and semi-transparent
-    strokeWeight: 1,         // FIX: Made thin
+    strokeColor: '#000000',    // Black lines work well on both light and dark maps
+    strokeOpacity: 0.2,      // Very transparent
+    strokeWeight: 0.5,       // Very thin
     clickable: false
 };
 
