@@ -87,8 +87,17 @@ function addEventListeners() {
 }
 
 function toggleOtpModal(show = false, phoneNumber = '') {
-    DOM.otpModalOverlay.classList.toggle('is-open', show);
-    DOM.otpModal.classList.toggle('is-open', show);
+    // These two lines handle the display: none / display: block
+    DOM.otpModalOverlay.classList.toggle('hidden', !show);
+    DOM.otpModal.classList.toggle('hidden', !show);
+
+    // This timeout allows the 'display' to apply before starting the animation
+    setTimeout(() => {
+        // These two lines handle the opacity/transform animation
+        DOM.otpModalOverlay.classList.toggle('is-open', show);
+        DOM.otpModal.classList.toggle('is-open', show);
+    }, 10);
+
     if (show) {
         DOM.otpPhoneDisplay.textContent = phoneNumber;
         DOM.otpError.classList.add('hidden');
