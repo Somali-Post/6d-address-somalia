@@ -6,6 +6,11 @@ import * as MapCore from './map-core.js';
 import { setupRecaptcha, sendOtp, verifyOtp } from './firebase.js'; // Import Firebase functions
 
 // --- State ---
+let appState = {
+    isLoggedIn: false,
+    user: null, // Will hold user data from our backend
+    sessionToken: null // Our backend's JWT
+};
 let map, geocoder, placesService;
 let drawnMapObjects = [];
 let gridLines = []; // State for the grid lines
@@ -56,6 +61,7 @@ async function init() {
         setupRecaptcha('recaptcha-container'); // Initialize Firebase reCAPTCHA
         addEventListeners();
         MapCore.updateDynamicGrid(map, gridLines); // Initial grid draw
+        checkSession();
     } catch (error) {
         console.error("Initialization Error:", error);
         document.body.innerHTML = `<div>Error: Could not load the map.</div>`;
@@ -84,6 +90,59 @@ function addEventListeners() {
     DOM.regNeighborhood.addEventListener('change', () => DOM.regNeighborhoodManualWrapper.classList.toggle('hidden', DOM.regNeighborhood.value !== 'Other'));
     DOM.registrationForm.addEventListener('submit', handleRegistrationSubmit);
     DOM.otpForm.addEventListener('submit', handleOtpSubmit);
+}
+
+/**
+ * Checks for a session token in localStorage on page load.
+ */
+function checkSession() {
+    const token = localStorage.getItem('sessionToken');
+    if (token) {
+        // In a real app, you'd verify this token with the backend.
+        // For now, we'll assume it's valid and transition the UI.
+        appState.isLoggedIn = true;
+        appState.sessionToken = token;
+        // We will fetch real user data in a later step.
+        transitionToLoggedInState({ fullName: 'Returning User' }); // Placeholder data
+    }
+}
+
+/**
+ * Transitions the entire UI to the logged-in state.
+ */
+function transitionToLoggedInState(userData) {
+    appState.isLoggedIn = true;
+    appState.user = userData;
+
+    console.log(`Welcome, ${userData.fullName}!`);
+
+    // This is a placeholder for the full dashboard UI transition.
+    // For now, it will switch to the (currently empty) dashboard view.
+    document.getElementById('view-map').classList.remove('active');
+    const dashboardView = document.getElementById('view-dashboard');
+    if (dashboardView) {
+        dashboardView.classList.add('active');
+        // We will populate the dashboard with real data later.
+        dashboardView.innerHTML = `<h1>Welcome, ${userData.fullName}</h1>`;
+    }
+    
+    // Update bottom nav active state
+    const activeNavLink = document.querySelector('#bottom-nav .nav-link.active');
+    if (activeNavLink) activeNavLink.classList.remove('active');
+    
+    const dashboardLink = document.querySelector('#bottom-nav .nav-link[data-view="dashboard"]');
+    if (dashboardLink) dashboardLink.classList.add('active');
+}
+
+/**
+ * Logs the user out, clears the session, and resets the UI.
+ */
+function logout() {
+    localStorage.removeItem('sessionToken');
+    appState.isLoggedIn = false;
+    appState.user = null;
+    appState.sessionToken = null;
+    window.location.reload(); // The simplest way to reset the UI to its initial logged-out state.
 }
 
 function toggleOtpModal(show = false, phoneNumber = '') {
@@ -348,19 +407,41 @@ async function handleOtpSubmit(event) {
     DOM.otpError.classList.add('hidden');
 
     try {
-        // This function is imported from firebase.js
+        // 1. Verify the OTP with Firebase to get the ID Token
         const result = await verifyOtp(confirmationResult, otpCode);
-        const user = result.user;
-        console.log("Phone number verified! User UID:", user.uid);
-        
+        const firebaseUser = result.user;
+        const idToken = await firebaseUser.getIdToken();
+        console.log("Firebase OTP Verified. Got ID Token.");
+
+        // 2. Get the Full Name from the registration form
+        const fullName = document.getElementById('reg-name').value;
+
+        // 3. Send the ID Token and Full Name to our backend
+        const response = await fetch(`${API_BASE_URL}/api/auth/firebase`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: idToken, fullName: fullName }),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to authenticate with our backend.');
+        }
+
+        const data = await response.json();
+        const sessionToken = data.token;
+        console.log("Backend authenticated successfully. Got session token.");
+
+        // 4. Save the session token and transition the UI
+        localStorage.setItem('sessionToken', sessionToken);
         toggleOtpModal(false);
-        alert(`Registration successful! Welcome, user ${user.uid}. Next step: Save data to Firestore and show dashboard.`);
-        // In the next phase, we'll replace this alert with the logic to save to the database
-        // and transition the UI to the logged-in dashboard state.
+        
+        // This is the "magic moment"
+        transitionToLoggedInState({ fullName: fullName });
 
     } catch (error) {
-        console.error("Error verifying OTP:", error);
-        DOM.otpError.textContent = "The code you entered is incorrect. Please try again.";
+        console.error("Final authentication step failed:", error);
+        DOM.otpError.textContent = "Authentication failed. Please try again.";
         DOM.otpError.classList.remove('hidden');
     } finally {
         submitButton.disabled = false;

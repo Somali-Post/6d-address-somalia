@@ -1,6 +1,10 @@
 // This file holds configuration data.
 export const GOOGLE_MAPS_API_KEY = "YOUR_GOOGLE_MAPS_API_KEY_HERE";
 
+// The base URL for our custom backend API
+// For local development, this will be http://localhost:3001
+export const API_BASE_URL = "http://localhost:3001";
+
 // This is our authoritative source for UI dropdowns.
 export const somaliAdministrativeHierarchy = {
     "Awdal": {
