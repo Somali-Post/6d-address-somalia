@@ -47,10 +47,14 @@ main {
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 8px;
+    border-radius: 16px; /* Increased for a softer look */
+    padding: 10px; /* Adjusted padding */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
     transition: transform 0.2s ease;
+    
+    /* FIX: Set a fixed size for the container */
+    width: 60px;
+    height: 60px;
 }
 
 #logo-container:hover {
@@ -59,8 +63,9 @@ main {
 
 #logo-container img {
     display: block;
-    width: 40px; /* Mobile size */
-    height: 40px;
+    /* FIX: Make the image fill the container */
+    width: 100%; 
+    height: 100%;
     object-fit: contain;
 }
 
