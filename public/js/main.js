@@ -3,12 +3,14 @@
 import { GOOGLE_MAPS_API_KEY, somaliAdministrativeHierarchy } from './config.js';
 import { loadGoogleMapsAPI } from './utils.js';
 import * as MapCore from './map-core.js';
+import { setupRecaptcha, sendOtp, verifyOtp } from './firebase.js'; // Import Firebase functions
 
 // --- State ---
 let map, geocoder, placesService;
 let drawnMapObjects = [];
 let gridLines = []; // State for the grid lines
 let currentAddress = null;
+let confirmationResult = null; // To store the Firebase confirmation result
 
 // --- DOM Elements ---
 const DOM = {
@@ -35,6 +37,11 @@ const DOM = {
     regDistrict: document.getElementById('reg-district'),
     regNeighborhood: document.getElementById('reg-neighborhood'),
     regNeighborhoodManualWrapper: document.getElementById('reg-neighborhood-manual-wrapper'),
+    otpModalOverlay: document.getElementById('otp-modal-overlay'),
+    otpModal: document.getElementById('otp-modal'),
+    otpForm: document.getElementById('otp-form'),
+    otpPhoneDisplay: document.getElementById('otp-phone-display'),
+    otpError: document.getElementById('otp-error'),
 };
 
 // --- Helper Functions ---
@@ -46,6 +53,7 @@ async function init() {
         map = new google.maps.Map(DOM.mapElement, { center: { lat: 2.0469, lng: 45.3182 }, zoom: 13, disableDefaultUI: true, zoomControl: true, clickableIcons: false, draggableCursor: 'default' });
         geocoder = new google.maps.Geocoder();
         placesService = new google.maps.places.PlacesService(map);
+        setupRecaptcha('recaptcha-container'); // Initialize Firebase reCAPTCHA
         addEventListeners();
         MapCore.updateDynamicGrid(map, gridLines); // Initial grid draw
     } catch (error) {
@@ -75,6 +83,17 @@ function addEventListeners() {
     DOM.regDistrict.addEventListener('change', () => populateNeighborhoods(DOM.regRegion.value, DOM.regCity.value, DOM.regDistrict.value));
     DOM.regNeighborhood.addEventListener('change', () => DOM.regNeighborhoodManualWrapper.classList.toggle('hidden', DOM.regNeighborhood.value !== 'Other'));
     DOM.registrationForm.addEventListener('submit', handleRegistrationSubmit);
+    DOM.otpForm.addEventListener('submit', handleOtpSubmit);
+}
+
+function toggleOtpModal(show = false, phoneNumber = '') {
+    DOM.otpModalOverlay.classList.toggle('is-open', show);
+    DOM.otpModal.classList.toggle('is-open', show);
+    if (show) {
+        DOM.otpPhoneDisplay.textContent = phoneNumber;
+        DOM.otpError.classList.add('hidden');
+        document.getElementById('otp-input').value = '';
+    }
 }
 
 function openRegistrationSheet() {
@@ -279,7 +298,65 @@ function populateNeighborhoods(regionKey, cityKey, districtKey) {
 
 async function handleRegistrationSubmit(event) {
     event.preventDefault();
-    alert("Form Submitted. Next step: Trigger Firebase OTP flow here.");
+    const form = event.target;
+    const submitButton = form.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
+    submitButton.textContent = 'Sending Code...';
+
+    const phoneNumber = `+252${document.getElementById('reg-phone').value}`;
+
+    try {
+        // This function is imported from firebase.js
+        confirmationResult = await sendOtp(phoneNumber);
+        console.log("OTP sent successfully. Confirmation result stored.");
+        
+        closeRegistrationSheet(); // Close the form sheet
+        toggleOtpModal(true, phoneNumber); // Open the stylish OTP modal
+
+    } catch (error) {
+        console.error("Error sending OTP:", error);
+        alert("Failed to send verification code. Please check the phone number and try again.");
+    } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Verify Phone Number';
+    }
+}
+
+async function handleOtpSubmit(event) {
+    event.preventDefault();
+    const form = event.target;
+    const submitButton = form.querySelector('button[type="submit"]');
+    const otpCode = document.getElementById('otp-input').value;
+    
+    if (!confirmationResult || !/^\d{6}$/.test(otpCode)) {
+        DOM.otpError.textContent = "Please enter a valid 6-digit code.";
+        DOM.otpError.classList.remove('hidden');
+        return;
+    }
+
+    submitButton.disabled = true;
+    submitButton.textContent = 'Verifying...';
+    DOM.otpError.classList.add('hidden');
+
+    try {
+        // This function is imported from firebase.js
+        const result = await verifyOtp(confirmationResult, otpCode);
+        const user = result.user;
+        console.log("Phone number verified! User UID:", user.uid);
+        
+        toggleOtpModal(false);
+        alert(`Registration successful! Welcome, user ${user.uid}. Next step: Save data to Firestore and show dashboard.`);
+        // In the next phase, we'll replace this alert with the logic to save to the database
+        // and transition the UI to the logged-in dashboard state.
+
+    } catch (error) {
+        console.error("Error verifying OTP:", error);
+        DOM.otpError.textContent = "The code you entered is incorrect. Please try again.";
+        DOM.otpError.classList.remove('hidden');
+    } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Verify & Proceed';
+    }
 }
 
 document.addEventListener('DOMContentLoaded', init);
