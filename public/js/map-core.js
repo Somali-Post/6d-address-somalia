@@ -55,3 +55,49 @@ export function drawAddressBoxes(map, latLng, drawnObjectsRef) {
         drawnObjectsRef.push(rect);
     }
 }
+
+/**
+ * CRITICAL FIX: This function was missing.
+ * Draws a dynamic grid on the map that adapts to the zoom level.
+ * @param {google.maps.Map} map The map instance.
+ * @param {Array} gridLinesRef A reference to an array to store drawn grid lines.
+ */
+export function updateDynamicGrid(map, gridLinesRef) {
+    // Clear any previously drawn grid lines
+    gridLinesRef.forEach(line => line.setMap(null));
+    gridLinesRef.length = 0;
+
+    const zoom = map.getZoom();
+    const bounds = map.getBounds();
+    if (!bounds) return;
+
+    let spacing = null;
+    if (zoom >= 17) {
+        spacing = 0.0001; // 11m grid
+    } else if (zoom >= 13) {
+        spacing = 0.01; // 1.1km grid
+    }
+
+    if (spacing === null) return; // No grid at this zoom level
+
+    const ne = bounds.getNorthEast();
+    const sw = bounds.getSouthWest();
+    const gridStyle = {
+        strokeColor: '#FFFFFF',
+        strokeOpacity: 0.15,
+        strokeWeight: 1,
+        clickable: false
+    };
+
+    // Draw latitude lines
+    for (let lat = Math.floor(sw.lat() / spacing) * spacing; lat < ne.lat(); lat += spacing) {
+        const line = new google.maps.Polyline({ ...gridStyle, path: [{ lat, lng: sw.lng() }, { lat, lng: ne.lng() }], map });
+        gridLinesRef.push(line);
+    }
+
+    // Draw longitude lines
+    for (let lng = Math.floor(sw.lng() / spacing) * spacing; lng < ne.lng(); lng += spacing) {
+        const line = new google.maps.Polyline({ ...gridStyle, path: [{ lat: sw.lat(), lng }, { lat: ne.lat(), lng }], map });
+        gridLinesRef.push(line);
+    }
+}
