@@ -83,11 +83,11 @@ export function updateDynamicGrid(map, gridLinesRef) {
     const ne = bounds.getNorthEast();
     const sw = bounds.getSouthWest();
     const gridStyle = {
-        strokeColor: '#FFFFFF',
-        strokeOpacity: 0.15,
-        strokeWeight: 1,
-        clickable: false
-    };
+    strokeColor: '#FF0000',  // FIX: Changed to bright red
+    strokeOpacity: 1.0,      // FIX: Made fully opaque
+    strokeWeight: 2,         // FIX: Made slightly thicker
+    clickable: false
+};
 
     // Draw latitude lines
     for (let lat = Math.floor(sw.lat() / spacing) * spacing; lat < ne.lat(); lat += spacing) {
