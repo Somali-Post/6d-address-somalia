@@ -77,10 +77,11 @@ main {
             border-radius: 16px;
         }
 
-        #logo-container img {
-            width: 50px;
-            height: 50px;
-        }
+        /* Increase the size of the logo image itself */
+main > #logo-container img {
+    width: 60px !important;  /* FIX: Added specificity and !important */
+    height: 60px !important; /* FIX: Added specificity and !important */
+}
 
     }
 
