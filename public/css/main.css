@@ -80,6 +80,7 @@ main {
     border-radius: 8px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.3);
     width: 150px; /* Set the container width */
+    height: auto;
     
     /* FIX: Re-added the blur effect for a frosted glass look */
     backdrop-filter: blur(8px);
