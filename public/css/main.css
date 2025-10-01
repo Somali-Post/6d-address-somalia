@@ -59,8 +59,8 @@ main {
     transition: transform 0.2s ease;
     
     /* Keep the container size */
-    width: 80px;
-    height: 80px;
+    width: 100px;
+    height: 100px;
 }
 
 #logo-container:hover {
