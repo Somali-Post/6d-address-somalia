@@ -304,6 +304,8 @@ main {
     font-weight: bold;
     font-family: 'Courier New', Courier, monospace;
     color: var(--text-secondary); /* For the dashes */
+    flex-grow: 1;
+    text-align: center;
 }
 
 .code-part-red { color: #D32F2F; }
