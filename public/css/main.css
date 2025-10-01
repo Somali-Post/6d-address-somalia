@@ -285,36 +285,41 @@ main {
 
 /* --- Polished Info Panel Styles --- */
 #info-panel-address {
-    gap: 0.75rem; /* Reduced gap for a tighter layout */
+    gap: 1rem; /* Increased gap for better vertical spacing */
+    position: relative; /* Needed for positioning the action icons */
 }
 
+/* This is the main header that will now be centered */
 .info-panel-header {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column; /* Stack pill and text vertically */
     align-items: center;
-    width: 100%;
+    gap: 0.25rem;
 }
 
 .code-pill {
     background-color: var(--background-color);
     border: 1px solid var(--border-color);
-    border-radius: 999px; /* Creates the pill shape */
+    border-radius: 999px;
     padding: 8px 16px;
     font-size: 1.25rem;
     font-weight: bold;
     font-family: 'Courier New', Courier, monospace;
-    color: var(--text-secondary); /* For the dashes */
-    flex-grow: 1;
-    text-align: center;
+    color: var(--text-secondary);
 }
 
 .code-part-red { color: #D32F2F; }
 .code-part-green { color: #388E3C; }
 .code-part-blue { color: #1976D2; }
 
+/* NEW: Position the action icons absolutely, flanking the header */
 .info-panel-actions {
+    position: absolute;
+    top: 50px; /* Adjust this value to vertically align with the pill */
+    width: 100%;
     display: flex;
-    gap: 0.5rem;
+    justify-content: space-between;
+    padding: 0 1rem;
 }
 
 .icon-btn {
@@ -362,5 +367,4 @@ main {
     background-color: rgba(0, 122, 255, 0.1);
     border: 1px solid rgba(0, 122, 255, 0.2);
     border-radius: 8px;
-    margin-bottom: 0.5rem;
 }
