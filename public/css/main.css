@@ -80,11 +80,12 @@ main {
         -webkit-backdrop-filter: none;
     }
 
-    /* The image now fills the container */
+     /* The image now fills the container */
     #logo-container img {
         width: 100%; /* Fills the 150px container */
         height: auto;
-    }
+    } /* <-- ADD THIS CLOSING BRACE */
+
 }
 /* --- Bottom Navigation Bar --- */
 #bottom-nav {
