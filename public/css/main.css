@@ -35,56 +35,57 @@ main {
     height: 100%;
 }
 
-/* --- Floating Logo --- */
+/* --- FINAL LOGO STYLES --- */
+
+/* 1. Default Mobile Styles */
 #logo-container {
     position: absolute;
     top: 20px;
     left: 20px;
-    z-index: 500; /* Below modals but above the map */
-    
-    /* The "floating island" effect */
-    background-color: rgba(17, 24, 39, 0.6); /* --component-bg with transparency */
+    z-index: 500;
+    background-color: rgba(17, 24, 39, 0.6);
     backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px); /* For Safari support */
+    -webkit-backdrop-filter: blur(8px);
     border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 8px;
-    
-    display: flex;
-    align-items: center;
-    justify-content: center;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
     transition: transform 0.2s ease;
 }
 
-    #logo-container:hover {
-        transform: scale(1.05);
-    }
-
-    #logo-container img {
-        display: block;
-        width: 40px;
-        height: 40px;
-        object-fit: contain;
-    }
-    @media (min-width: 768px) {
-        
-        /* Make the logo larger on screens tablet-sized and up */
-        #logo-container {
-            top: 24px;
-            left: 24px;
-            padding: 12px;
-            border-radius: 16px;
-        }
-
-        /* Increase the size of the logo image itself */
-main > #logo-container img {
-    width: 60px !important;  /* FIX: Added specificity and !important */
-    height: 60px !important; /* FIX: Added specificity and !important */
+#logo-container:hover {
+    transform: scale(1.05);
 }
 
+#logo-container img {
+    display: block;
+    width: 40px; /* Mobile size */
+    height: 40px;
+    object-fit: contain;
+}
+
+/* 2. Desktop Override Styles */
+@media (min-width: 768px) {
+    
+    /* On desktop, we switch to the container-based sizing */
+    #logo-container {
+        background-color: #ffffff;
+        padding: 8px;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        width: 150px; /* Set the container width */
+        
+        /* Remove mobile-specific styles */
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
     }
 
+    /* The image now fills the container */
+    #logo-container img {
+        width: 100%; /* Fills the 150px container */
+        height: auto;
+    }
+}
 /* --- Bottom Navigation Bar --- */
 #bottom-nav {
     position: fixed;
@@ -398,33 +399,3 @@ main > #logo-container img {
     box-sizing: border-box;
 }
 .error-message { color: #ff4d4d; text-align: center; font-size: 0.9rem; }
-
-/* --- Responsive Styles for Desktop --- */
-
-/* --- Responsive Styles for Desktop --- */
-
-@media (min-width: 768px) {
-    
-    /* --- New Desktop Logo Styles --- */
-
-    /* 1. Style the container */
-    #logo-container {
-        /* Use the new styles you provided */
-        background-color: #ffffff;
-        padding: 8px;
-        border-radius: 8px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-        width: 150px; /* Set a fixed width for the container */
-
-        /* Remove old glassmorphism styles */
-        backdrop-filter: none;
-        -webkit-backdrop-filter: none;
-    }
-
-    /* 2. Style the image to fill the container */
-    #logo-container img {
-        width: 100%;  /* Image fills the 150px container */
-        height: auto; /* Height adjusts automatically */
-    }
-
-}
