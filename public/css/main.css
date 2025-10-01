@@ -397,3 +397,23 @@ main {
     box-sizing: border-box;
 }
 .error-message { color: #ff4d4d; text-align: center; font-size: 0.9rem; }
+
+/* --- Responsive Styles for Desktop --- */
+
+@media (min-width: 768px) {
+    
+    /* Make the logo container larger on screens tablet-sized and up */
+    #logo-container {
+        top: 24px;
+        left: 24px;
+        padding: 12px;
+        border-radius: 16px;
+    }
+
+    /* Increase the size of the logo image itself */
+    #logo-container img {
+        width: 50px;  /* Increased from 40px */
+        height: 50px; /* Increased from 40px */
+    }
+
+}
