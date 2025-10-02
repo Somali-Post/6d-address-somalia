@@ -1,4 +1,5 @@
 'use strict';
+console.log("Executing main.js version 2");
 
 import { GOOGLE_MAPS_API_KEY, somaliAdministrativeHierarchy, API_BASE_URL } from './config.js';
 import { loadGoogleMapsAPI } from './utils.js';
