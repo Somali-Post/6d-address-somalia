@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const usersRouter = require('./routes/users');
 // We will create this auth router in the next step
 const authRouter = require('./routes/auth'); 
 
@@ -20,6 +21,7 @@ app.use(express.json()); // To parse JSON request bodies
 
 // --- Routes ---
 app.use('/api/auth', authRouter); // We will uncomment this later
+app.use('/api/users', usersRouter);
 
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
