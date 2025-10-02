@@ -407,41 +407,58 @@ async function handleOtpSubmit(event) {
     DOM.otpError.classList.add('hidden');
 
     try {
-        // 1. Verify the OTP with Firebase to get the ID Token
+        // 1. Verify OTP with Firebase to get the user and their ID Token
         const result = await verifyOtp(confirmationResult, otpCode);
         const firebaseUser = result.user;
         const idToken = await firebaseUser.getIdToken();
-        console.log("Firebase OTP Verified. Got ID Token.");
+        console.log("Firebase OTP Verified. User UID:", firebaseUser.uid);
 
-        // 2. Get the Full Name from the registration form
-        const fullName = document.getElementById('reg-name').value;
+        // 2. Gather all registration data from the form and currentAddress state
+        const registrationData = {
+            fullName: document.getElementById('reg-name').value,
+            phoneNumber: `+252${document.getElementById('reg-phone').value}`,
+            sixDCode: currentAddress.sixDCode,
+            localitySuffix: currentAddress.localitySuffix,
+            region: DOM.regRegion.options[DOM.regRegion.selectedIndex].text,
+            city: DOM.regCity.options[DOM.regCity.selectedIndex].text,
+            district: DOM.regDistrict.options[DOM.regDistrict.selectedIndex].text,
+            neighborhood: DOM.regNeighborhood.value === 'Other' 
+                ? document.getElementById('reg-neighborhood-manual').value 
+                : DOM.regNeighborhood.value,
+            lat: currentAddress.lat,
+            lng: currentAddress.lng
+        };
 
-        // 3. Send the ID Token and Full Name to our backend
-        const response = await fetch(`${API_BASE_URL}/api/auth/firebase`, {
+        // 3. Send the complete data to our single, secure backend endpoint
+        const response = await fetch(`${API_BASE_URL}/api/users/register`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token: idToken, fullName: fullName }),
+            headers: {
+                'Content-Type': 'application/json',
+                // This is the critical part: sending the token in the header
+                'Authorization': `Bearer ${idToken}` 
+            },
+            body: JSON.stringify(registrationData),
         });
 
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.error || 'Failed to authenticate with our backend.');
+            throw new Error(errorData.error || 'Failed to save registration data.');
         }
 
-        const data = await response.json();
-        const sessionToken = data.token;
-        console.log("Backend authenticated successfully. Got session token.");
-
-        // 4. Save the session token and transition the UI
-        localStorage.setItem('sessionToken', sessionToken);
-        toggleOtpModal(false);
+        console.log("User data saved successfully to our database.");
         
-        // This is the "magic moment"
-        transitionToLoggedInState({ fullName: fullName });
+        // 4. Since registration is successful, we can consider the user logged in.
+        // We'll just use the ID token for now for simplicity, though a real app might get a new session token.
+        localStorage.setItem('sessionToken', idToken);
+
+        // 5. Transition to the dashboard
+        toggleOtpModal(false);
+        alert('Registration successful! Welcome!');
+        // We will implement the real dashboard transition next.
 
     } catch (error) {
-        console.error("Final authentication step failed:", error);
-        DOM.otpError.textContent = "Authentication failed. Please try again.";
+        console.error("Final registration step failed:", error);
+        DOM.otpError.textContent = "Registration failed. Please try again.";
         DOM.otpError.classList.remove('hidden');
     } finally {
         submitButton.disabled = false;
