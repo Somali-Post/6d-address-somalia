@@ -68,12 +68,22 @@ router.post('/register', verifyFirebaseToken, async (req, res) => {
         }
     }
 
-    // 2. Insert the new address
-    const addressResult = await db.query(
-      `INSERT INTO addresses(user_id, six_d_code, locality_suffix, region, city, district, neighborhood, latitude, longitude)
-       VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
-      [uid, sixDCode, localitySuffix, region, city, district, neighborhood, lat, lng]
-    );
+    // 2. Insert or update the address
+const addressResult = await db.query(
+  `INSERT INTO addresses(user_id, six_d_code, locality_suffix, region, city, district, neighborhood, location)
+   VALUES($1, $2, $3, $4, $5, $6, $7, ST_SetSRID(ST_MakePoint($8, $9), 4326))
+   ON CONFLICT (user_id) DO UPDATE SET
+     six_d_code = EXCLUDED.six_d_code,
+     locality_suffix = EXCLUDED.locality_suffix,
+     region = EXCLUDED.region,
+     city = EXCLUDED.city,
+     district = EXCLUDED.district,
+     neighborhood = EXCLUDED.neighborhood,
+     location = EXCLUDED.location,
+     registered_at = NOW()
+   RETURNING *`,
+  [uid, sixDCode, localitySuffix, region, city, district, neighborhood, lng, lat] // IMPORTANT: Note the order is lng, then lat for PostGIS
+);
     
     await db.query('COMMIT');
 
