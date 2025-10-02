@@ -520,32 +520,34 @@ main {
 }
 
 /* --- Floating Login Button Styles --- */
-#login-btn { /* More specific selector */
+#login-btn {
     position: absolute;
     top: 20px;
     right: 20px;
     z-index: 500;
     
-    /* Pill Shape & Style */
-    background-color: var(--component-bg);
-    border: 1px solid var(--border-color);
-    color: var(--text-primary);
-    padding: 10px 24px; /* Adjusted padding for a better look */
+    /* Pill Shape & Style (CORRECTED) */
+    background-color: transparent; /* Outline by default */
+    border: 1px solid var(--primary-blue);
+    color: var(--primary-blue);
+    padding: 10px 24px;
     border-radius: 999px;
     font-size: 1rem;
     font-weight: 500;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     cursor: pointer;
     
-    /* Smooth Animation */
-    transition: all 0.3s ease;
-    opacity: 1;
-    transform: translateY(0);
+    /* Added for alignment and animation */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
 }
 
 #login-btn:hover {
-    background-color: var(--hover-bg);
-    transform: translateY(-2px); /* Add a subtle lift on hover */
+    background-color: var(--primary-blue); /* Solid blue on hover */
+    color: var(--text-primary); /* White text on hover */
+    transform: translateY(-2px);
 }
 
 /* Class to hide the button after login */
