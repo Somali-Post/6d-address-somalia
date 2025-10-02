@@ -17,6 +17,7 @@ let drawnMapObjects = [];
 let gridLines = []; // State for the grid lines
 let currentAddress = null;
 let confirmationResult = null; // To store the Firebase confirmation result
+let resendInterval = null; // To store the timer interval
 
 // --- DOM Elements ---
 const DOM = {
@@ -56,6 +57,8 @@ const DOM = {
     loginError: document.getElementById('login-error'),
     authLink: document.getElementById('auth-link'),
     authLinkText: document.getElementById('auth-link-text'),
+    resendOtpBtn: document.getElementById('resend-otp-btn'),
+    otpTimer: document.getElementById('otp-timer'),
 };
 
 // --- Helper Functions ---
@@ -104,6 +107,19 @@ function addEventListeners() {
     DOM.closeLoginModalBtn.addEventListener('click', () => toggleLoginModal(false));
     DOM.loginModalOverlay.addEventListener('click', () => toggleLoginModal(false));
     DOM.loginForm.addEventListener('submit', handleLoginSubmit);
+    DOM.resendOtpBtn.addEventListener('click', async () => {
+        if (DOM.resendOtpBtn.disabled) return;
+        console.log("Resending OTP...");
+        const fullPhoneNumber = DOM.otpPhoneDisplay.textContent;
+        try {
+            confirmationResult = await sendOtp(fullPhoneNumber);
+            startResendTimer(); // Restart the timer on success
+        } catch (error) {
+            console.error("Error resending OTP:", error);
+            DOM.otpError.textContent = "Failed to resend code. Please try again shortly.";
+            DOM.otpError.classList.remove('hidden');
+        }
+    });
 
     // --- Bottom Navigation Logic ---
     const navLinks = document.querySelectorAll('#bottom-nav .nav-link');
@@ -330,8 +346,7 @@ function transitionToLoggedInState(userData) {
     // After everything is done, update the info panel's button text
     updateInitialInfoPanel();
 
-    // Hide the login button
-    DOM.loginBtn.classList.add('hidden');
+    updateAuthLink(); // Update to "Logout"
 }
 
 /**
@@ -343,6 +358,7 @@ function logout() {
     appState.user = null;
     appState.sessionToken = null;
     window.location.reload(); // The simplest way to reset the UI to its initial logged-out state.
+    updateAuthLink(); 
 }
 
 function toggleOtpModal(show = false, phoneNumber = '') {
@@ -361,7 +377,25 @@ function toggleOtpModal(show = false, phoneNumber = '') {
         DOM.otpPhoneDisplay.textContent = phoneNumber;
         DOM.otpError.classList.add('hidden');
         document.getElementById('otp-input').value = '';
+        startResendTimer();
     }
+}
+
+function startResendTimer() {
+    clearInterval(resendInterval);
+    let secondsLeft = 30;
+    DOM.resendOtpBtn.disabled = true;
+
+    resendInterval = setInterval(() => {
+        if (secondsLeft <= 0) {
+            clearInterval(resendInterval);
+            DOM.otpTimer.textContent = '';
+            DOM.resendOtpBtn.disabled = false;
+        } else {
+            DOM.otpTimer.textContent = `(${secondsLeft}s)`;
+            secondsLeft--;
+        }
+    }, 1000);
 }
 
 function openRegistrationSheet() {
