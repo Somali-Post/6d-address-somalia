@@ -557,3 +557,25 @@ main {
     transform: translateY(-20px);
     pointer-events: none;
 }
+
+/* --- Login Modal Styles (Consistent with OTP Modal) --- */
+#login-modal-overlay {
+    position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.6);
+    z-index: 2998; /* Just below the OTP modal */
+    opacity: 0; transition: opacity 0.3s ease; pointer-events: none;
+}
+#login-modal-overlay.is-open { opacity: 1; pointer-events: auto; }
+
+#login-modal {
+    position: fixed; top: 50%; left: 50%;
+    width: 90%; max-width: 380px; background-color: var(--component-bg);
+    border-radius: 16px; z-index: 3000;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    opacity: 0; transform: translate(-50%, -40%) scale(0.95); transition: all 0.3s ease;
+}
+#login-modal.is-open { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+/* Re-use existing modal/form styles for consistency */
+#login-modal .modal-header, #login-modal .modal-content {
+    /* These will inherit styles from the OTP modal's classes */
+}

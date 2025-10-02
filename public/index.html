@@ -179,6 +179,26 @@
             <div id="otp-error" class="error-message hidden"></div>
         </div>
     </div>
+
+    <!-- The NEW Login Modal -->
+    <div id="login-modal-overlay" class="hidden"></div>
+    <div id="login-modal" class="hidden">
+        <div class="modal-header">
+            <h4>Login to Your Account</h4>
+            <button id="close-login-modal-btn" title="Close">&times;</button>
+        </div>
+        <div class="modal-content">
+            <p>Enter your phone number to receive a verification code.</p>
+            <form id="login-form">
+                <div class="phone-input-wrapper">
+                    <span>+252</span>
+                    <input type="tel" id="login-phone" required pattern="^[6-9]\d{8}$">
+                </div>
+                <button type="submit" class="btn btn-primary">Send Verification Code</button>
+            </form>
+            <div id="login-error" class="error-message hidden"></div>
+        </div>
+    </div>
     <!-- END OF NEW ELEMENTS -->
 
     <script src="./js/firebase.js" type="module"></script>

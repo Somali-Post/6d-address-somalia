@@ -50,6 +50,11 @@ const DOM = {
     otpError: document.getElementById('otp-error'),
     logoutBtn: document.getElementById('logout-btn'),
     loginBtn: document.getElementById('login-btn'),
+    loginModalOverlay: document.getElementById('login-modal-overlay'),
+    loginModal: document.getElementById('login-modal'),
+    closeLoginModalBtn: document.getElementById('close-login-modal-btn'),
+    loginForm: document.getElementById('login-form'),
+    loginError: document.getElementById('login-error'),
 };
 
 // --- Helper Functions ---
@@ -94,6 +99,9 @@ function addEventListeners() {
     DOM.registrationForm.addEventListener('submit', handleRegistrationSubmit);
     DOM.otpForm.addEventListener('submit', handleOtpSubmit);
     DOM.loginBtn.addEventListener('click', handleLoginClick);
+    DOM.closeLoginModalBtn.addEventListener('click', () => toggleLoginModal(false));
+    DOM.loginModalOverlay.addEventListener('click', () => toggleLoginModal(false));
+    DOM.loginForm.addEventListener('submit', handleLoginSubmit);
 
     // --- Bottom Navigation Logic ---
     const navLinks = document.querySelectorAll('#bottom-nav .nav-link');
@@ -125,34 +133,59 @@ function addEventListeners() {
 }
 
 /**
- * Handles the click on the main Login button.
- * This will open a modal to ask for the user's phone number.
+ * Toggles the visibility of the new Login Modal.
+ * @param {boolean} show True to show, false to hide.
  */
-function handleLoginClick() {
-    // This is a simplified version of the registration flow.
-    // We will build a dedicated login modal UI in a future step.
-    // For now, we can reuse the registration sheet for the login input.
-    const phoneNumber = prompt("Please enter your phone number to log in (e.g., 61xxxxxxx):");
-    if (phoneNumber && /^[6-9]\d{8}$/.test(phoneNumber)) {
-        // If the phone number is valid, start the OTP flow
-        startOtpFlow(`+252${phoneNumber}`);
-    } else if (phoneNumber) {
-        alert("Invalid phone number format.");
+function toggleLoginModal(show = false) {
+    DOM.loginModalOverlay.classList.toggle('is-open', show);
+    DOM.loginModal.classList.toggle('is-open', show);
+    DOM.loginModalOverlay.classList.toggle('hidden', !show);
+    DOM.loginModal.classList.toggle('hidden', !show);
+    if (show) {
+        DOM.loginError.classList.add('hidden');
+        document.getElementById('login-phone').value = '';
     }
 }
 
 /**
- * A new helper function to start the OTP flow.
- * This will be used by both login and registration.
+ * Handles the click on the main Login button by opening the Login Modal.
  */
-async function startOtpFlow(fullPhoneNumber) {
+function handleLoginClick() {
+    toggleLoginModal(true);
+}
+
+/**
+ * Handles the submission of the new Login Modal form.
+ */
+async function handleLoginSubmit(event) {
+    event.preventDefault();
+    const form = event.target;
+    const submitButton = form.querySelector('button[type="submit"]');
+    const phoneNumber = document.getElementById('login-phone').value;
+
+    if (!/^[6-9]\d{8}$/.test(phoneNumber)) {
+        DOM.loginError.textContent = "Invalid phone number format.";
+        DOM.loginError.classList.remove('hidden');
+        return;
+    }
+    
+    submitButton.disabled = true;
+    submitButton.textContent = 'Sending Code...';
+    DOM.loginError.classList.add('hidden');
+
     try {
+        const fullPhoneNumber = `+252${phoneNumber}`;
         confirmationResult = await sendOtp(fullPhoneNumber);
         console.log("OTP sent successfully for login.");
-        toggleOtpModal(true, fullPhoneNumber);
+        toggleLoginModal(false); // Close the login modal
+        toggleOtpModal(true, fullPhoneNumber); // Open the OTP modal
     } catch (error) {
         console.error("Error sending OTP for login:", error);
-        alert("Failed to send verification code. Please try again.");
+        DOM.loginError.textContent = "Failed to send code. Please try again.";
+        DOM.loginError.classList.remove('hidden');
+    } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Send Verification Code';
     }
 }
 
