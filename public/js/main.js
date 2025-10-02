@@ -93,38 +93,71 @@ function addEventListeners() {
 }
 
 /**
- * Checks for a session token in localStorage on page load.
+ * Checks for a session token in localStorage and fetches user data.
  */
-function checkSession() {
+async function checkSession() {
     const token = localStorage.getItem('sessionToken');
-    if (token) {
-        // In a real app, you'd verify this token with the backend.
-        // For now, we'll assume it's valid and transition the UI.
-        appState.isLoggedIn = true;
-        appState.sessionToken = token;
-        // We will fetch real user data in a later step.
-        transitionToLoggedInState({ fullName: 'Returning User' }); // Placeholder data
+    if (!token) {
+        console.log("No session token found.");
+        return; // No user is logged in
+    }
+
+    console.log("Session token found. Verifying with backend...");
+    appState.sessionToken = token;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/users/me`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            // If the token is invalid (e.g., expired), log the user out
+            throw new Error('Invalid session token.');
+        }
+
+        const userData = await response.json();
+        console.log("User data fetched successfully:", userData);
+        transitionToLoggedInState(userData);
+
+    } catch (error) {
+        console.error("Session check failed:", error);
+        logout(); // Clear the invalid token and reset the UI
     }
 }
 
 /**
- * Transitions the entire UI to the logged-in state.
+ * Transitions the UI to the logged-in state and populates the dashboard.
  */
 function transitionToLoggedInState(userData) {
     appState.isLoggedIn = true;
     appState.user = userData;
 
-    console.log(`Welcome, ${userData.fullName}!`);
+    // --- Populate the Dashboard UI ---
+    const dashboardGreeting = document.getElementById('dashboard-greeting');
+    const dashboard6dCode = document.getElementById('dashboard-6d-code');
+    const dashboardFullAddress = document.getElementById('dashboard-full-address');
+    const dashboardRegisteredTo = document.getElementById('dashboard-registered-to');
+    const dashboardMap = document.getElementById('dashboard-map');
 
-    // This is a placeholder for the full dashboard UI transition.
-    // For now, it will switch to the (currently empty) dashboard view.
-    document.getElementById('view-map').classList.remove('active');
-    const dashboardView = document.getElementById('view-dashboard');
-    if (dashboardView) {
-        dashboardView.classList.add('active');
-        // We will populate the dashboard with real data later.
-        dashboardView.innerHTML = `<h1>Welcome, ${userData.fullName}</h1>`;
+    if (dashboardGreeting) dashboardGreeting.textContent = `Welcome back, ${userData.full_name}!`;
+    if (dashboard6dCode) dashboard6dCode.textContent = userData.six_d_code;
+    if (dashboardFullAddress) {
+        const addressParts = [userData.neighborhood, userData.district, userData.city, userData.region].filter(Boolean);
+        dashboardFullAddress.textContent = addressParts.join(', ');
     }
+    if (dashboardRegisteredTo) dashboardRegisteredTo.textContent = `Registered to: ${userData.full_name}`;
+
+    // --- Render the Static Mini-Map ---
+    if (dashboardMap && userData.lat && userData.lng) {
+        const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${userData.lat},${userData.lng}&zoom=18&size=600x300&maptype=roadmap&markers=color:blue%7Clabel:A%7C${userData.lat},${userData.lng}&key=${GOOGLE_MAPS_API_KEY}`;
+        dashboardMap.style.backgroundImage = `url(${staticMapUrl})`;
+    }
+
+    // --- Switch to the Dashboard View ---
+    document.getElementById('view-map').classList.remove('active');
+    document.getElementById('view-dashboard').classList.add('active');
     
     // Update bottom nav active state
     const activeNavLink = document.querySelector('#bottom-nav .nav-link.active');
