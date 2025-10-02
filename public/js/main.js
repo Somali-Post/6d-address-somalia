@@ -48,6 +48,7 @@ const DOM = {
     otpPhoneDisplay: document.getElementById('otp-phone-display'),
     otpError: document.getElementById('otp-error'),
     logoutBtn: document.getElementById('logout-btn'),
+    loginBtn: document.getElementById('login-btn'),
 };
 
 // --- Helper Functions ---
@@ -91,6 +92,7 @@ function addEventListeners() {
     DOM.regNeighborhood.addEventListener('change', () => DOM.regNeighborhoodManualWrapper.classList.toggle('hidden', DOM.regNeighborhood.value !== 'Other'));
     DOM.registrationForm.addEventListener('submit', handleRegistrationSubmit);
     DOM.otpForm.addEventListener('submit', handleOtpSubmit);
+    DOM.loginBtn.addEventListener('click', handleLoginClick);
 
     // --- Bottom Navigation Logic ---
     const navLinks = document.querySelectorAll('#bottom-nav .nav-link');
@@ -119,6 +121,38 @@ function addEventListeners() {
             logout();
         }
     });
+}
+
+/**
+ * Handles the click on the main Login button.
+ * This will open a modal to ask for the user's phone number.
+ */
+function handleLoginClick() {
+    // This is a simplified version of the registration flow.
+    // We will build a dedicated login modal UI in a future step.
+    // For now, we can reuse the registration sheet for the login input.
+    const phoneNumber = prompt("Please enter your phone number to log in (e.g., 61xxxxxxx):");
+    if (phoneNumber && /^[6-9]\d{8}$/.test(phoneNumber)) {
+        // If the phone number is valid, start the OTP flow
+        startOtpFlow(`+252${phoneNumber}`);
+    } else if (phoneNumber) {
+        alert("Invalid phone number format.");
+    }
+}
+
+/**
+ * A new helper function to start the OTP flow.
+ * This will be used by both login and registration.
+ */
+async function startOtpFlow(fullPhoneNumber) {
+    try {
+        confirmationResult = await sendOtp(fullPhoneNumber);
+        console.log("OTP sent successfully for login.");
+        toggleOtpModal(true, fullPhoneNumber);
+    } catch (error) {
+        console.error("Error sending OTP for login:", error);
+        alert("Failed to send verification code. Please try again.");
+    }
 }
 
 /**
@@ -233,6 +267,9 @@ function transitionToLoggedInState(userData) {
 
     // After everything is done, update the info panel's button text
     updateInitialInfoPanel();
+
+    // Hide the login button
+    DOM.loginBtn.classList.add('hidden');
 }
 
 /**
@@ -515,6 +552,7 @@ async function handleRegistrationSubmit(event) {
 }
 
 async function handleOtpSubmit(event) {
+    // ... (The top part of the function remains the same: getting the OTP code, disabling the button, etc.)
     event.preventDefault();
     const form = event.target;
     const submitButton = form.querySelector('button[type="submit"]');
@@ -531,60 +569,41 @@ async function handleOtpSubmit(event) {
     DOM.otpError.classList.add('hidden');
 
     try {
-        // 1. Verify OTP with Firebase to get the user and their ID Token
+        // 1. Verify OTP with Firebase
         const result = await verifyOtp(confirmationResult, otpCode);
         const firebaseUser = result.user;
         const idToken = await firebaseUser.getIdToken();
         console.log("Firebase OTP Verified. User UID:", firebaseUser.uid);
 
-        // 2. Gather all registration data from the form and currentAddress state
-        const registrationData = {
-            fullName: document.getElementById('reg-name').value,
-            phoneNumber: `+252${document.getElementById('reg-phone').value}`,
-            sixDCode: currentAddress.sixDCode,
-            localitySuffix: currentAddress.localitySuffix,
-            region: DOM.regRegion.options[DOM.regRegion.selectedIndex].text,
-            city: DOM.regCity.options[DOM.regCity.selectedIndex].text,
-            district: DOM.regDistrict.options[DOM.regDistrict.selectedIndex].text,
-            neighborhood: DOM.regNeighborhood.value === 'Other' 
-                ? document.getElementById('reg-neighborhood-manual').value 
-                : DOM.regNeighborhood.value,
-            lat: currentAddress.lat,
-            lng: currentAddress.lng
-        };
-
-        // 3. Send the complete data to our single, secure backend endpoint
-        const response = await fetch(`${API_BASE_URL}/api/users/register`, {
+        // 2. Authenticate with our backend to get a session token
+        const authResponse = await fetch(`${API_BASE_URL}/api/auth/firebase`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                // This is the critical part: sending the token in the header
-                'Authorization': `Bearer ${idToken}` 
-            },
-            body: JSON.stringify(registrationData),
+            headers: { 'Content-Type': 'application/json' },
+            // We only need to send the token for a login
+            body: JSON.stringify({ token: idToken }),
         });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Failed to save registration data.');
+        if (!authResponse.ok) {
+            throw new Error('Backend authentication failed.');
         }
-
-        console.log("User data saved successfully to our database.");
         
-        // 4. Since registration is successful, we can consider the user logged in.
-        // We'll just use the ID token for now for simplicity, though a real app might get a new session token.
-        localStorage.setItem('sessionToken', idToken);
+        const authData = await authResponse.json();
+        localStorage.setItem('sessionToken', authData.token);
+        console.log("Backend session token received and stored.");
 
-        // 5. Transition to the dashboard
+        // 3. Close the modal and transition to the dashboard
         toggleOtpModal(false);
-        alert('Registration successful! Welcome!');
-        // We will implement the real dashboard transition next.
+        
+        // This will now fetch the user's real data and show the dashboard
+        checkSession(); 
 
     } catch (error) {
+        // ... (The error handling part of the function remains the same)
         console.error("Final registration step failed:", error);
         DOM.otpError.textContent = "Registration failed. Please try again.";
         DOM.otpError.classList.remove('hidden');
     } finally {
+        // ... (The finally block remains the same)
         submitButton.disabled = false;
         submitButton.textContent = 'Verify & Proceed';
     }
