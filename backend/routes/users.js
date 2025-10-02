@@ -109,4 +109,54 @@ const addressResult = await db.query(
   }
 });
 
+
+// GET /api/users/me
+// Fetches the profile and current address for the authenticated user.
+router.get('/me', verifyFirebaseToken, async (req, res) => {
+  // The user's UID is available from our verifyFirebaseToken middleware
+  const { uid } = req.user;
+
+  try {
+    // We need to fetch data from two tables: 'users' and 'addresses'.
+    // A JOIN query is the most efficient way to do this in a single database call.
+    const query = `
+      SELECT
+        u.id,
+        u.phone_number,
+        u.full_name,
+        u.created_at,
+        a.six_d_code,
+        a.locality_suffix,
+        a.region,
+        a.city,
+        a.district,
+        a.neighborhood,
+        a.registered_at,
+        ST_X(a.location) as lng, -- Extract longitude from the PostGIS point
+        ST_Y(a.location) as lat  -- Extract latitude from the PostGIS point
+      FROM
+        users u
+      JOIN
+        addresses a ON u.id = a.user_id
+      WHERE
+        u.id = $1;
+    `;
+
+    const result = await db.query(query, [uid]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User profile not found.' });
+    }
+
+    const userData = result.rows[0];
+
+    // Respond with the combined user and address data
+    res.status(200).json(userData);
+
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    res.status(500).json({ error: 'An error occurred while fetching user data.' });
+  }
+});
+
 module.exports = router;
