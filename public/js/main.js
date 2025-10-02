@@ -90,6 +90,40 @@ function addEventListeners() {
     DOM.regNeighborhood.addEventListener('change', () => DOM.regNeighborhoodManualWrapper.classList.toggle('hidden', DOM.regNeighborhood.value !== 'Other'));
     DOM.registrationForm.addEventListener('submit', handleRegistrationSubmit);
     DOM.otpForm.addEventListener('submit', handleOtpSubmit);
+
+    // --- Bottom Navigation Logic ---
+    const navLinks = document.querySelectorAll('#bottom-nav .nav-link');
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const viewName = link.dataset.view;
+            if (!viewName) return;
+
+            // Remove active class from all links and views
+            navLinks.forEach(l => l.classList.remove('active'));
+            document.querySelectorAll('.main-view').forEach(v => v.classList.remove('active'));
+
+            // Add active class to the clicked link and corresponding view
+            link.classList.add('active');
+            const viewToShow = document.getElementById(`view-${viewName}`);
+            if (viewToShow) {
+                viewToShow.classList.add('active');
+            }
+        });
+    });
+
+    // --- Logout Logic (Placeholder) ---
+    // We will add a real logout button later. For now, let's add a listener
+    // to the settings icon as a temporary way to log out.
+    const settingsLink = document.querySelector('#bottom-nav .nav-link[data-view="settings"]');
+    if (settingsLink) {
+        // This is temporary. We will replace this with a real logout button in the dashboard/settings UI.
+        settingsLink.addEventListener('dblclick', () => {
+            if (confirm('Are you sure you want to log out?')) {
+                logout();
+            }
+        });
+    }
 }
 
 /**
