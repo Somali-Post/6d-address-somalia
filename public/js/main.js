@@ -134,32 +134,57 @@ function transitionToLoggedInState(userData) {
     appState.isLoggedIn = true;
     appState.user = userData;
 
-    // --- Populate the Dashboard UI ---
+    // --- DOM Elements for the dashboard ---
     const dashboardGreeting = document.getElementById('dashboard-greeting');
     const dashboard6dCode = document.getElementById('dashboard-6d-code');
     const dashboardFullAddress = document.getElementById('dashboard-full-address');
     const dashboardRegisteredTo = document.getElementById('dashboard-registered-to');
     const dashboardMap = document.getElementById('dashboard-map');
+    const dashboardUpdateBtn = document.getElementById('dashboard-update-btn');
+    const dashboardUpdateInfo = document.getElementById('dashboard-update-info');
 
+    // --- Populate the Dashboard UI ---
     if (dashboardGreeting) dashboardGreeting.textContent = `Welcome back, ${userData.full_name}!`;
     if (dashboard6dCode) dashboard6dCode.textContent = userData.six_d_code;
     if (dashboardFullAddress) {
         const addressParts = [userData.neighborhood, userData.district, userData.city, userData.region].filter(Boolean);
         dashboardFullAddress.textContent = addressParts.join(', ');
     }
-    if (dashboardRegisteredTo) dashboardRegisteredTo.textContent = `Registered to: ${userData.full_name}`;
+    if (dashboardRegisteredTo) {
+        const registeredDate = new Date(userData.registered_at).toLocaleDateString();
+        dashboardRegisteredTo.textContent = `Registered to: ${userData.full_name} (Since: ${registeredDate})`;
+    }
 
     // --- Render the Static Mini-Map ---
     if (dashboardMap && userData.lat && userData.lng) {
-        const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${userData.lat},${userData.lng}&zoom=18&size=600x300&maptype=roadmap&markers=color:blue%7Clabel:A%7C${userData.lat},${userData.lng}&key=${GOOGLE_MAPS_API_KEY}`;
+        const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${userData.lat},${userData.lng}&zoom=18&size=600x300&maptype=roadmap&markers=color:blue%7C${userData.lat},${userData.lng}&key=${GOOGLE_MAPS_API_KEY}`;
         dashboardMap.style.backgroundImage = `url(${staticMapUrl})`;
+    }
+
+    // --- CRITICAL: Implement the 30-Day Update Logic ---
+    if (dashboardUpdateBtn && dashboardUpdateInfo && userData.registered_at) {
+        const lastRegisteredDate = new Date(userData.registered_at);
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+        if (lastRegisteredDate > thirtyDaysAgo) {
+            // User has updated in the last 30 days - LOCK the button
+            dashboardUpdateBtn.disabled = true;
+            
+            const nextUpdateDate = new Date(lastRegisteredDate.setDate(lastRegisteredDate.getDate() + 30));
+            dashboardUpdateInfo.textContent = `Next update available on: ${nextUpdateDate.toLocaleDateString()}`;
+            dashboardUpdateInfo.classList.remove('hidden');
+        } else {
+            // User is eligible to update - ENABLE the button
+            dashboardUpdateBtn.disabled = false;
+            dashboardUpdateInfo.classList.add('hidden');
+        }
     }
 
     // --- Switch to the Dashboard View ---
     document.getElementById('view-map').classList.remove('active');
     document.getElementById('view-dashboard').classList.add('active');
     
-    // Update bottom nav active state
     const activeNavLink = document.querySelector('#bottom-nav .nav-link.active');
     if (activeNavLink) activeNavLink.classList.remove('active');
     
