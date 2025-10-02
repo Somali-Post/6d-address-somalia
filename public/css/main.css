@@ -508,3 +508,13 @@ main {
     background-color: rgba(0,0,0,0.2);
     border-radius: 8px;
 }
+
+/* --- Logout Button Style --- */
+.btn.btn-danger {
+    border-color: #dc3545;
+    color: #dc3545;
+}
+.btn.btn-danger:hover {
+    background-color: #dc3545;
+    color: var(--text-primary);
+}
