@@ -8,50 +8,84 @@
 </head>
 <body>
     <main>
-    <div id="logo-container">
-        <img src="assets/logo-somalia.png" alt="6D Address Logo">
-    </div>
-    <div id="map"></div>
-
-        <!-- The Floating Info Panel for map interactions -->
-        <div id="info-panel">
-            <!-- Initial State -->
-            <div id="info-panel-initial" class="info-panel-view active">
-                <button id="find-my-location-btn" class="btn">Find My 6D Address</button>
+        <!-- View 1: The Map (Now wrapped in a container) -->
+        <div id="view-map" class="main-view active">
+            <div id="logo-container">
+                <img src="assets/logo-somalia.png" alt="6D Address Logo">
             </div>
-            <!-- Loading State -->
-            <div id="info-panel-loading" class="info-panel-view">
-                <div class="spinner-small"></div>
-                <span>Locating...</span>
+            <div id="map"></div>
+    
+            <!-- The Floating Info Panel for map interactions -->
+            <div id="info-panel">
+                <!-- Initial State -->
+                <div id="info-panel-initial" class="info-panel-view active">
+                    <button id="find-my-location-btn" class="btn">Find My 6D Address</button>
+                </div>
+                <!-- Loading State -->
+                <div id="info-panel-loading" class="info-panel-view">
+                    <div class="spinner-small"></div>
+                    <span>Locating...</span>
+                </div>
+                <!-- Address Display State -->
+                <div id="info-panel-address" class="info-panel-view">
+                    <div id="gps-accuracy-display" class="hidden"></div>
+    
+                    <div class="info-panel-header">
+                        <div class="code-pill">
+                            <span class="code-part-red"></span>-<span class="code-part-green"></span>-<span class="code-part-blue"></span>
+                        </div>
+                        <div class="info-panel-actions">
+                            <button id="copy-btn" class="icon-btn" title="Copy Address">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                            <button id="share-btn" class="icon-btn" title="Share Address">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                            </button>
+                            <button id="recenter-btn" class="icon-btn hidden" title="Recenter Map">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+                            </button>
+                        </div>
+                    </div>
+    
+                    <div class="address-text">
+                        <p id="address-district"></p>
+                        <p id="address-region"></p>
+                    </div>
+    
+                    <button id="register-this-address-btn" class="btn btn-primary">Register This Address</button>
+                </div>
             </div>
-            <!-- Address Display State -->
-            <div id="info-panel-address" class="info-panel-view">
-    <div id="gps-accuracy-display" class="hidden"></div>
-
-    <div class="info-panel-header">
-        <div class="code-pill">
-            <span class="code-part-red"></span>-<span class="code-part-green"></span>-<span class="code-part-blue"></span>
         </div>
-        <div class="info-panel-actions">
-            <button id="copy-btn" class="icon-btn" title="Copy Address">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-            </button>
-            <button id="share-btn" class="icon-btn" title="Share Address">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-            </button>
-            <button id="recenter-btn" class="icon-btn hidden" title="Recenter Map">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
-            </button>
+
+        <!-- View 2: The Dashboard (This is the new, empty container) -->
+        <div id="view-dashboard" class="main-view">
+            <div class="dashboard-header">
+                <h2 id="dashboard-greeting">Welcome back!</h2>
+            </div>
+            <div class="address-card">
+                <div id="dashboard-map" class="mini-map">
+                    <!-- The static mini-map will be rendered here -->
+                </div>
+                <div class="card-content">
+                    <div class="card-address-details">
+                        <div id="dashboard-6d-code" class="code-display">-- -- --</div>
+                        <p id="dashboard-full-address">Loading address...</p>
+                        <p id="dashboard-registered-to">Registered to: Loading...</p>
+                    </div>
+                    <div class="card-actions">
+                        <button id="dashboard-update-btn" class="btn">Update My Address</button>
+                        <button id="dashboard-share-btn" class="btn btn-secondary">Share My Address</button>
+                    </div>
+                    <div id="dashboard-update-info" class="update-info hidden">
+                        <!-- This will show the 30-day limit message -->
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <div class="address-text">
-        <p id="address-district"></p>
-        <p id="address-region"></p>
-    </div>
-
-    <button id="register-this-address-btn" class="btn btn-primary">Register This Address</button>
-</div>
+        <!-- View 3: The Settings (This is the new, empty container) -->
+        <div id="view-settings" class="main-view">
+            <!-- The settings content will be added here later -->
         </div>
     </main>
 
