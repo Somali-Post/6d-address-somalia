@@ -8,11 +8,16 @@ const router = express.Router();
 // The endpoint our frontend will call
 // POST /api/auth/firebase
 router.post('/firebase', async (req, res) => {
-  const { token } = req.body;
+  // Diagnostic Log to see what's arriving
+  console.log('Incoming Headers on /api/auth/firebase:', req.headers);
 
-  if (!token) {
-    return res.status(401).json({ error: 'Firebase ID token is required.' });
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Authorization header with Bearer token is required.' });
   }
+
+  const token = authHeader.split(' ')[1];
 
   try {
     // 1. Verify the Firebase ID token
