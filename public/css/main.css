@@ -527,9 +527,10 @@ main {
     z-index: 500;
     
     /* Pill Shape & Style (CORRECTED) */
-    background-color: transparent; /* Outline by default */
-    border: 1px solid var(--primary-blue);
-    color: var(--primary-blue);
+    background-color: var(--component-bg); /* FIX: Use solid navy background */
+    border: 1px solid var(--border-color);   /* FIX: Use subtle border */
+    color: var(--text-primary);            /* FIX: Use white text */
+    
     padding: 10px 24px;
     border-radius: 999px;
     font-size: 1rem;
@@ -537,7 +538,6 @@ main {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     cursor: pointer;
     
-    /* Added for alignment and animation */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -545,8 +545,9 @@ main {
 }
 
 #login-btn:hover {
-    background-color: var(--primary-blue); /* Solid blue on hover */
-    color: var(--text-primary); /* White text on hover */
+    background-color: var(--primary-blue); /* Solid blue on hover (Correct) */
+    border-color: var(--primary-blue);     /* Match border color on hover */
+    color: var(--text-primary);
     transform: translateY(-2px);
 }
 
