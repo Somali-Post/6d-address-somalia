@@ -53,8 +53,11 @@ router.post('/firebase', async (req, res) => {
     res.status(200).json({ token: sessionToken });
 
   } catch (error) {
-    console.error('Authentication error:', error);
-    res.status(401).json({ error: 'Authentication failed. Invalid token.' });
+    console.error('Firebase token verification failed:', error);
+    res.status(401).json({ 
+      error: 'Authentication failed. Invalid token.',
+      firebaseError: error.message // Send the specific error back in the response
+    });
   }
 });
 

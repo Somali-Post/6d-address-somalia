@@ -8,6 +8,13 @@ const authRouter = require('./routes/auth');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Diagnostic middleware to log all incoming requests
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+  console.log('Incoming Headers:', JSON.stringify(req.headers, null, 2));
+  next();
+});
+
 // --- Middleware ---
 // Enable CORS for our Netlify frontend
 // Enable CORS for our Netlify frontend AND our local development server
