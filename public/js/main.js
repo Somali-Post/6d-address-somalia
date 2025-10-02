@@ -49,12 +49,13 @@ const DOM = {
     otpPhoneDisplay: document.getElementById('otp-phone-display'),
     otpError: document.getElementById('otp-error'),
     logoutBtn: document.getElementById('logout-btn'),
-    loginBtn: document.getElementById('login-btn'),
     loginModalOverlay: document.getElementById('login-modal-overlay'),
     loginModal: document.getElementById('login-modal'),
     closeLoginModalBtn: document.getElementById('close-login-modal-btn'),
     loginForm: document.getElementById('login-form'),
     loginError: document.getElementById('login-error'),
+    authLink: document.getElementById('auth-link'),
+    authLinkText: document.getElementById('auth-link-text'),
 };
 
 // --- Helper Functions ---
@@ -70,6 +71,7 @@ async function init() {
         addEventListeners();
         MapCore.updateDynamicGrid(map, gridLines); // Initial grid draw
         checkSession();
+        updateAuthLink(); // Set the initial state
     } catch (error) {
         console.error("Initialization Error:", error);
         document.body.innerHTML = `<div>Error: Could not load the map.</div>`;
@@ -98,7 +100,7 @@ function addEventListeners() {
     DOM.regNeighborhood.addEventListener('change', () => DOM.regNeighborhoodManualWrapper.classList.toggle('hidden', DOM.regNeighborhood.value !== 'Other'));
     DOM.registrationForm.addEventListener('submit', handleRegistrationSubmit);
     DOM.otpForm.addEventListener('submit', handleOtpSubmit);
-    DOM.loginBtn.addEventListener('click', handleLoginClick);
+    DOM.authLink.addEventListener('click', handleAuthClick);
     DOM.closeLoginModalBtn.addEventListener('click', () => toggleLoginModal(false));
     DOM.loginModalOverlay.addEventListener('click', () => toggleLoginModal(false));
     DOM.loginForm.addEventListener('submit', handleLoginSubmit);
@@ -133,6 +135,39 @@ function addEventListeners() {
 }
 
 /**
+ * Handles clicks on the main auth link in the bottom nav.
+ * If logged out, it opens the login modal.
+ * If logged in, it logs the user out.
+ */
+function handleAuthClick(e) {
+    e.preventDefault();
+    if (appState.isLoggedIn) {
+        // User is logged in, so this is a logout button
+        if (confirm('Are you sure you want to log out?')) {
+            logout();
+        }
+    } else {
+        // User is logged out, so this is a login button
+        toggleLoginModal(true);
+    }
+}
+
+/**
+ * Updates the auth link's text and icon based on login state.
+ */
+function updateAuthLink() {
+    if (appState.isLoggedIn) {
+        DOM.authLinkText.textContent = 'Logout';
+        // Optional: Change the icon to a "logout" icon
+        DOM.authLink.querySelector('svg').innerHTML = '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>';
+    } else {
+        DOM.authLinkText.textContent = 'Login';
+        // Optional: Change the icon back to a "login" icon
+        DOM.authLink.querySelector('svg').innerHTML = '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>';
+    }
+}
+
+/**
  * Toggles the visibility of the new Login Modal.
  * @param {boolean} show True to show, false to hide.
  */
@@ -145,13 +180,6 @@ function toggleLoginModal(show = false) {
         DOM.loginError.classList.add('hidden');
         document.getElementById('login-phone').value = '';
     }
-}
-
-/**
- * Handles the click on the main Login button by opening the Login Modal.
- */
-function handleLoginClick() {
-    toggleLoginModal(true);
 }
 
 /**

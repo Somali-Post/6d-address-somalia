@@ -519,44 +519,7 @@ main {
     color: var(--text-primary);
 }
 
-/* --- Floating Login Button Styles --- */
-#login-btn {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    z-index: 500;
-    
-    /* Pill Shape & Style (CORRECTED) */
-    background-color: var(--component-bg); /* FIX: Use solid navy background */
-    border: 1px solid var(--border-color);   /* FIX: Use subtle border */
-    color: var(--text-primary);            /* FIX: Use white text */
-    
-    padding: 10px 24px;
-    border-radius: 999px;
-    font-size: 1rem;
-    font-weight: 500;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    cursor: pointer;
-    
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-}
 
-#login-btn:hover {
-    background-color: var(--primary-blue); /* Solid blue on hover (Correct) */
-    border-color: var(--primary-blue);     /* Match border color on hover */
-    color: var(--text-primary);
-    transform: translateY(-2px);
-}
-
-/* Class to hide the button after login */
-#login-btn.hidden {
-    opacity: 0;
-    transform: translateY(-20px);
-    pointer-events: none;
-}
 
 /* --- Login Modal Styles (Consistent with OTP Modal) --- */
 #login-modal-overlay {
