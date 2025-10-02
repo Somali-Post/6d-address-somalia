@@ -520,34 +520,36 @@ main {
 }
 
 /* --- Floating Login Button Styles --- */
-.floating-pill-btn {
+#login-btn { /* More specific selector */
     position: absolute;
     top: 20px;
     right: 20px;
-    z-index: 500; /* Above the map, below modals */
+    z-index: 500;
     
     /* Pill Shape & Style */
     background-color: var(--component-bg);
     border: 1px solid var(--border-color);
     color: var(--text-primary);
-    padding: 10px 20px;
-    border-radius: 999px; /* Creates the pill shape */
+    padding: 10px 24px; /* Adjusted padding for a better look */
+    border-radius: 999px;
     font-size: 1rem;
     font-weight: 500;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
     
     /* Smooth Animation */
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    transition: all 0.3s ease;
     opacity: 1;
     transform: translateY(0);
 }
 
-.floating-pill-btn:hover {
+#login-btn:hover {
     background-color: var(--hover-bg);
+    transform: translateY(-2px); /* Add a subtle lift on hover */
 }
 
 /* Class to hide the button after login */
-.floating-pill-btn.hidden {
+#login-btn.hidden {
     opacity: 0;
     transform: translateY(-20px);
     pointer-events: none;
