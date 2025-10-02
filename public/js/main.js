@@ -1,6 +1,6 @@
 'use strict';
 
-import { GOOGLE_MAPS_API_KEY, somaliAdministrativeHierarchy } from './config.js';
+import { GOOGLE_MAPS_API_KEY, somaliAdministrativeHierarchy, API_BASE_URL } from './config.js';
 import { loadGoogleMapsAPI } from './utils.js';
 import * as MapCore from './map-core.js';
 import { setupRecaptcha, sendOtp, verifyOtp } from './firebase.js'; // Import Firebase functions
