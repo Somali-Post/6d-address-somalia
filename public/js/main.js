@@ -972,8 +972,11 @@ async function handleOtpSubmit(event) {
             // Now, get a session token
             const authResponse = await fetch(`${API_BASE_URL}/api/auth/firebase`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token: idToken }),
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${idToken}` 
+                },
+                // No body is needed if the token is in the header
             });
             if (!authResponse.ok) throw new Error('Backend authentication failed after registration.');
             const authData = await authResponse.json();
@@ -984,8 +987,11 @@ async function handleOtpSubmit(event) {
             console.log("Completing login...");
             const authResponse = await fetch(`${API_BASE_URL}/api/auth/firebase`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token: idToken }),
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${idToken}`
+                },
+                 // No body is needed if the token is in the header
             });
             if (!authResponse.ok) throw new Error('Backend authentication failed.');
             const authData = await authResponse.json();
