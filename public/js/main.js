@@ -11,6 +11,7 @@ import { locales } from './locales.js';
 let map, geocoder, placesService;
 let drawnMapObjects = [];
 let gridLines = [];
+let homeMarker = null; // To hold the user's home marker
 let currentAddress = null;
 let confirmationResult = null;
 let appState = {
@@ -510,6 +511,16 @@ function transitionToLoggedInState(userData) {
         dashboardMap.style.backgroundImage = `url(${staticMapUrl})`;
     }
 
+    // --- Create the Home Marker on the Map ---
+    if (userData.lat && userData.lng) {
+        const homePosition = new google.maps.LatLng(userData.lat, userData.lng);
+        
+        // Clear any old marker first
+        if (homeMarker) homeMarker.setMap(null);
+        
+        homeMarker = MapCore.createHomeMarker(map, homePosition);
+    }
+
     // --- Implement the 30-Day Update Logic ---
     if (dashboardUpdateBtn && dashboardUpdateInfo && userData.registered_at) {
         const lastRegisteredDate = new Date(userData.registered_at);
@@ -544,6 +555,9 @@ function transitionToLoggedInState(userData) {
     // --- Update the Auth Link to show "Logout" ---
     updateAuthLink();
     updateSettingsView();
+
+    // At the end of transitionToLoggedInState()
+    DOM.findMyLocationBtn.textContent = "Show My Registered Address";
 }
 
 /**
@@ -555,6 +569,8 @@ function logout() {
     appState.user = null;
     appState.sessionToken = null;
     updateSettingsView();
+    // In logout()
+    DOM.findMyLocationBtn.textContent = "Find My 6D Address";
     window.location.reload(); // The simplest way to reset the UI to its initial logged-out state.
     updateAuthLink(); 
 }
@@ -645,19 +661,13 @@ function closeRegistrationSheet() {
  */
 function handleFindMyLocation() {
     if (appState.isLoggedIn && appState.user) {
-        // --- LOGGED-IN USER FLOW ---
-        // The user wants to see their registered address.
-        console.log("Showing registered address for logged-in user.");
-        const userLatLng = new google.maps.LatLng(appState.user.lat, appState.user.lng);
-        
-        // Animate to their saved address, not their current GPS location
-        animateToLocation(map, userLatLng, (finalLatLng) => {
-            processLocation(finalLatLng); // Re-process the saved location
+        // --- LOGGED-IN USER: "Show My Registered Address" ---
+        const homePosition = new google.maps.LatLng(appState.user.lat, appState.user.lng);
+        animateToLocation(map, homePosition, (finalLatLng) => {
+            processLocation(finalLatLng); // Re-process the home location
         });
-        
     } else {
-        // --- LOGGED-OUT USER FLOW ---
-        // The user wants to find their current GPS location.
+        // --- LOGGED-OUT USER: "Find My 6D Address" (GPS) ---
         if (!navigator.geolocation) return alert("Geolocation is not supported.");
         
         switchInfoPanelView('loading');
@@ -693,6 +703,20 @@ async function processLocation(latLng, accuracy = null) {
     }
 }
 
+/**
+ * Calculates the distance in kilometers between two LatLng points.
+ * @param {google.maps.LatLng} point1
+ * @param {google.maps.LatLng} point2
+ * @returns {string} A formatted distance string (e.g., "5.2 km").
+ */
+function calculateDistance(point1, point2) {
+    if (google.maps.geometry) {
+        const distanceInMeters = google.maps.geometry.spherical.computeDistanceBetween(point1, point2);
+        return `${(distanceInMeters / 1000).toFixed(1)} km`;
+    }
+    return ''; // Return empty if geometry library isn't loaded
+}
+
 function updateInfoPanel(data, accuracy) {
     const codeParts = (data.sixDCode || '').split('-');
     if (DOM.codePillSpans.length === 3) {
@@ -702,18 +726,31 @@ function updateInfoPanel(data, accuracy) {
     }
     DOM.addressDistrict.textContent = data.district || '';
     DOM.addressRegion.textContent = `${data.region || ''} ${data.localitySuffix || ''}`.trim();
-    if (accuracy) {
-        DOM.gpsAccuracyDisplay.textContent = `Location accuracy: ±${Math.round(accuracy)}m`;
-        DOM.gpsAccuracyDisplay.classList.remove('hidden');
-    } else {
-        DOM.gpsAccuracyDisplay.classList.add('hidden');
-    }
 
-    // Change button text based on mode
-    if (appState.isUpdateMode) {
-        DOM.registerThisAddressBtn.textContent = "Confirm New Address";
+    if (appState.isLoggedIn && appState.user) {
+        // --- LOGGED-IN "EXPLORATION" MODE ---
+        DOM.registerThisAddressBtn.classList.add('hidden'); // Hide the register button
+
+        // Calculate and display the distance from their home address
+        const homePosition = new google.maps.LatLng(appState.user.lat, appState.user.lng);
+        const selectedPosition = new google.maps.LatLng(data.lat, data.lng);
+        const distance = calculateDistance(homePosition, selectedPosition);
+        
+        if (DOM.gpsAccuracyDisplay) { // Reuse the accuracy display for distance
+            DOM.gpsAccuracyDisplay.textContent = `Distance from your address: ${distance}`;
+            DOM.gpsAccuracyDisplay.classList.remove('hidden');
+        }
+
     } else {
-        DOM.registerThisAddressBtn.textContent = "Register This Address";
+        // --- LOGGED-OUT "REGISTRATION" MODE ---
+        DOM.registerThisAddressBtn.classList.remove('hidden'); // Show the register button
+        
+        if (accuracy) {
+            DOM.gpsAccuracyDisplay.textContent = `Location accuracy: ±${Math.round(accuracy)}m`;
+            DOM.gpsAccuracyDisplay.classList.remove('hidden');
+        } else {
+            DOM.gpsAccuracyDisplay.classList.add('hidden');
+        }
     }
 }
 

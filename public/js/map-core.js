@@ -101,3 +101,31 @@ export function updateDynamicGrid(map, gridLinesRef) {
         gridLinesRef.push(line);
     }
 }
+
+/**
+ * Creates a custom "Home" marker for the user's registered address.
+ * @param {google.maps.Map} map The map instance.
+ * @param {google.maps.LatLng} position The position for the marker.
+ * @returns {google.maps.Marker} The created marker object.
+ */
+export function createHomeMarker(map, position) {
+    // Using a custom SVG for the marker for a professional look
+    const svgIcon = {
+        path: 'M12 2L2 7v13h20V7L12 2zm0 2.236L18.946 7H5.054L12 4.236zM4 9h16v11H4V9zm7 1a2 2 0 110 4 2 2 0 010-4z',
+        fillColor: '#007aff', // Our primary blue
+        fillOpacity: 1,
+        strokeWeight: 1,
+        strokeColor: '#ffffff',
+        rotation: 0,
+        scale: 1.2,
+        anchor: new google.maps.Point(12, 22),
+    };
+
+    const marker = new google.maps.Marker({
+        position: position,
+        map: map,
+        icon: svgIcon,
+        title: 'Your Registered Address'
+    });
+    return marker;
+}
