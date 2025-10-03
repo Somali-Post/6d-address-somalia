@@ -519,6 +519,10 @@ function transitionToLoggedInState(userData) {
         if (homeMarker) homeMarker.setMap(null);
         
         homeMarker = MapCore.createHomeMarker(map, homePosition);
+
+        // Center the map on the new home marker
+        map.setCenter(homePosition);
+        map.setZoom(18); // A close-up zoom level
     }
 
     // --- Implement the 30-Day Update Logic ---
