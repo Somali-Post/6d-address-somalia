@@ -1,34 +1,11 @@
 const express = require('express');
-const admin = require('../firebaseAdmin');
 const db = require('../db');
-const jwt = require('jsonwebtoken');
+// IMPORT BOTH MIDDLEWARE FUNCTIONS
+const { verifyFirebaseToken, verifySessionToken } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Middleware to verify Firebase ID token
-const verifyFirebaseToken = async (req, res, next) => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Authorization header with Bearer token is required.' });
-  }
-
-  const token = authHeader.split(' ')[1];
-
-  try {
-    const decodedToken = await admin.auth().verifyIdToken(token);
-    req.user = decodedToken; // Add user info to the request object
-    next();
-  } catch (error) {
-    console.error('Firebase token verification failed:', error);
-    res.status(401).json({ 
-      error: 'Authentication failed. Invalid token.',
-      firebaseError: error.message
-    });
-  }
-};
-
-// POST /api/users/register
+// The /register endpoint is special. It uses the Firebase token.
 router.post('/register', verifyFirebaseToken, async (req, res) => {
   const { uid, phone_number } = req.user; // From the verified token
   const {
@@ -110,9 +87,11 @@ const addressResult = await db.query(
 });
 
 
+// --- ALL OTHER USER ROUTES ---
+// All subsequent routes for a logged-in user must be protected by our internal session token.
+
 // GET /api/users/me
-// Fetches the profile and current address for the authenticated user.
-router.get('/me', verifyFirebaseToken, async (req, res) => {
+router.get('/me', verifySessionToken, async (req, res) => {
   // The user's UID is available from our verifyFirebaseToken middleware
   const { uid } = req.user;
 
@@ -160,9 +139,7 @@ router.get('/me', verifyFirebaseToken, async (req, res) => {
 });
 
 // PUT /api/users/me/address
-// Updates the authenticated user's current address.
-// Enforces the 30-day update limit and archives the old address.
-router.put('/me/address', verifyFirebaseToken, async (req, res) => {
+router.put('/me/address', verifySessionToken, async (req, res) => {
   // The user's UID is available from our verifyFirebaseToken middleware
   const { uid } = req.user; 
   const {
@@ -257,8 +234,7 @@ router.put('/me/address', verifyFirebaseToken, async (req, res) => {
 });
 
 // PUT /api/users/me
-// Updates the authenticated user's profile information (e.g., full_name).
-router.put('/me', async (req, res) => {
+router.put('/me', verifySessionToken, async (req, res) => {
   const { uid } = req.user; // From our verifyFirebaseToken middleware
   const { fullName } = req.body;
 
@@ -285,8 +261,7 @@ router.put('/me', async (req, res) => {
 });
 
 // GET /api/users/me/history
-// Fetches the address history for the authenticated user.
-router.get('/me/history', async (req, res) => {
+router.get('/me/history', verifySessionToken, async (req, res) => {
   const { uid } = req.user; // From our verifyFirebaseToken middleware
 
   try {
