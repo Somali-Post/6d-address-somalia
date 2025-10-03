@@ -41,3 +41,8 @@ app.get('/api/health', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
+
+// ADD THIS BLOCK FOR DIAGNOSTICS
+setInterval(() => {
+  console.log('Server heartbeat: Still running...');
+}, 5000); // Prints a message every 5 seconds
