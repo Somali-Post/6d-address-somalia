@@ -240,7 +240,10 @@ function addEventListeners() {
         }
     });
     DOM.profileForm.addEventListener('submit', handleProfileUpdate);
-    DOM.registerNowLink.addEventListener('click', handleRegisterNowClick);
+    const registerNowLink = document.getElementById('register-now-link');
+    if (registerNowLink) {
+        registerNowLink.addEventListener('click', handleRegisterNowClick);
+    }
 }
 
 /**
