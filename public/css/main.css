@@ -607,3 +607,26 @@ main {
     margin-left: 0.5rem;
     color: var(--text-secondary);
 }
+
+/* --- Toast Notification Styles --- */
+.toast {
+    position: fixed;
+    bottom: 100px; /* Position above the info panel/nav bar */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--component-bg);
+    color: var(--text-primary);
+    padding: 12px 24px;
+    border-radius: 999px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 4000;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translate(-50%, -10px); /* Animate upwards slightly */
+}

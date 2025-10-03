@@ -60,6 +60,10 @@ const DOM = {
     closeOtpModalBtn: document.getElementById('close-otp-modal-btn'),
     resendOtpBtn: document.getElementById('resend-otp-btn'),
     resendTimer: document.getElementById('resend-timer'),
+    toast: document.getElementById('toast-notification'),
+    settingsProfileManagement: document.getElementById('settings-profile-management'),
+    settingsAppPreferences: document.getElementById('settings-app-preferences'),
+    settingsDangerZone: document.getElementById('settings-danger-zone'),
 };
 
 // --- Helper Functions ---
@@ -123,25 +127,38 @@ function addEventListeners() {
 });
 
     // --- Bottom Navigation Logic ---
-    const navLinks = document.querySelectorAll('#bottom-nav .nav-link');
-    navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const viewName = link.dataset.view;
-            if (!viewName) return;
+const navLinks = document.querySelectorAll('#bottom-nav .nav-link');
+navLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const viewName = link.dataset.view;
+        if (!viewName) return;
 
-            // Remove active class from all links and views
-            navLinks.forEach(l => l.classList.remove('active'));
-            document.querySelectorAll('.main-view').forEach(v => v.classList.remove('active'));
+        // --- PERMISSION CHECK ---
+        const isProtectedView = (viewName === 'dashboard');
+        if (isProtectedView && !appState.isLoggedIn) {
+            showToast("Please log in to access your dashboard.");
+            return; // Stop the navigation
+        }
+        // --- END OF CHECK ---
 
-            // Add active class to the clicked link and corresponding view
-            link.classList.add('active');
-            const viewToShow = document.getElementById(`view-${viewName}`);
-            if (viewToShow) {
-                viewToShow.classList.add('active');
-            }
-        });
+        // Remove active class from all links and views
+        navLinks.forEach(l => l.classList.remove('active'));
+        document.querySelectorAll('.main-view').forEach(v => v.classList.remove('active'));
+
+        // Add active class to the clicked link and corresponding view
+        link.classList.add('active');
+        const viewToShow = document.getElementById(`view-${viewName}`);
+        if (viewToShow) {
+            viewToShow.classList.add('active');
+        }
+
+        // If navigating to settings, update its view
+        if (viewName === 'settings') {
+            updateSettingsView();
+        }
     });
+});
 
     // Connect the real logout button
     DOM.logoutBtn.addEventListener('click', () => {
@@ -149,6 +166,27 @@ function addEventListeners() {
             logout();
         }
     });
+}
+
+/**
+ * Displays a short-lived toast notification message.
+ * @param {string} message The message to display.
+ */
+function showToast(message) {
+    DOM.toast.textContent = message;
+    DOM.toast.classList.add('show');
+    setTimeout(() => {
+        DOM.toast.classList.remove('show');
+    }, 3000); // Hide after 3 seconds
+}
+
+/**
+ * Shows or hides sections within the Settings page based on login state.
+ */
+function updateSettingsView() {
+    const isLoggedIn = appState.isLoggedIn;
+    DOM.settingsProfileManagement.classList.toggle('hidden', !isLoggedIn);
+    DOM.settingsDangerZone.classList.toggle('hidden', !isLoggedIn);
 }
 
 /**
@@ -345,6 +383,7 @@ function transitionToLoggedInState(userData) {
 
     // --- Update the Auth Link to show "Logout" ---
     updateAuthLink();
+    updateSettingsView();
 }
 
 /**
@@ -355,6 +394,7 @@ function logout() {
     appState.isLoggedIn = false;
     appState.user = null;
     appState.sessionToken = null;
+    updateSettingsView();
     window.location.reload(); // The simplest way to reset the UI to its initial logged-out state.
     updateAuthLink(); 
 }

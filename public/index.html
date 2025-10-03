@@ -88,7 +88,31 @@
 
         <!-- View 3: The Settings (This is the new, empty container) -->
         <div id="view-settings" class="main-view">
-            <!-- The settings content will be added here later -->
+            <div class="settings-header">
+                <h1>Settings</h1>
+            </div>
+            <div class="settings-content">
+                <!-- Section 1: Logged-In Users ONLY -->
+                <div id="settings-profile-management" class="settings-section hidden">
+                    <h2>Profile Management</h2>
+                    <!-- Profile form will go here -->
+                    <p>Edit your name and phone number.</p>
+                </div>
+
+                <!-- Section 2: All Users -->
+                <div id="settings-app-preferences" class="settings-section">
+                    <h2>Application Preferences</h2>
+                    <!-- Language and Theme toggles will go here -->
+                    <p>Choose your language and theme.</p>
+                </div>
+
+                <!-- Section 3: Logged-In Users ONLY -->
+                <div id="settings-danger-zone" class="settings-section hidden">
+                    <h2>Danger Zone</h2>
+                    <!-- Delete Account button will go here -->
+                    <p>Permanently delete your account.</p>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -212,5 +236,8 @@
 
     <script src="./js/firebase.js" type="module"></script>
     <script src="./js/main.js" type="module"></script>
+
+    <!-- The Toast Notification Component -->
+    <div id="toast-notification" class="toast"></div>
 </body>
 </html>
