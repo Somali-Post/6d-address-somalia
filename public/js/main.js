@@ -7,16 +7,16 @@ import * as MapCore from './map-core.js';
 import { setupRecaptcha, sendOtp, verifyOtp } from './firebase.js'; // Import Firebase functions
 
 // --- State ---
-let appState = {
-    isLoggedIn: false,
-    user: null, // Will hold user data from our backend
-    sessionToken: null // Our backend's JWT
-};
 let map, geocoder, placesService;
 let drawnMapObjects = [];
-let gridLines = []; // State for the grid lines
+let gridLines = [];
 let currentAddress = null;
-let confirmationResult = null; // To store the Firebase confirmation result
+let confirmationResult = null;
+let appState = {
+    isLoggedIn: false,
+    user: null, // Will hold the complete user data object from our backend
+    sessionToken: null // Our backend's JWT
+};
 let resendTimerInterval = null;
 
 // --- DOM Elements ---
@@ -74,8 +74,7 @@ async function init() {
         setupRecaptcha('recaptcha-container'); // Initialize Firebase reCAPTCHA
         addEventListeners();
         MapCore.updateDynamicGrid(map, gridLines); // Initial grid draw
-        checkSession();
-        updateAuthLink(); // Set the initial state
+        checkSession(); // This should be the last call in the try block
     } catch (error) {
         console.error("Initialization Error:", error);
         document.body.innerHTML = `<div>Error: Could not load the map.</div>`;
@@ -247,13 +246,15 @@ function updateInitialInfoPanel() {
 }
 
 /**
- * Checks for a session token in localStorage and fetches user data.
+ * Checks for a session token in localStorage, verifies it with the backend,
+ * and fetches the user's data to initiate the logged-in state.
  */
 async function checkSession() {
     const token = localStorage.getItem('sessionToken');
     if (!token) {
-        console.log("No session token found.");
-        return; // No user is logged in
+        console.log("No session token found. User is logged out.");
+        updateAuthLink(); // Ensure the auth link shows "Login"
+        return;
     }
 
     console.log("Session token found. Verifying with backend...");
@@ -267,8 +268,8 @@ async function checkSession() {
         });
 
         if (!response.ok) {
-            // If the token is invalid (e.g., expired), log the user out
-            throw new Error('Invalid session token.');
+            // If the token is invalid (e.g., expired), the backend will return a 4xx error.
+            throw new Error('Invalid or expired session token.');
         }
 
         const userData = await response.json();
@@ -282,7 +283,7 @@ async function checkSession() {
 }
 
 /**
- * Transitions the UI to the logged-in state and populates the dashboard.
+ * Transitions the UI to the logged-in state and populates the dashboard with real data.
  */
 function transitionToLoggedInState(userData) {
     appState.isLoggedIn = true;
@@ -297,7 +298,7 @@ function transitionToLoggedInState(userData) {
     const dashboardUpdateBtn = document.getElementById('dashboard-update-btn');
     const dashboardUpdateInfo = document.getElementById('dashboard-update-info');
 
-    // --- Populate the Dashboard UI ---
+    // --- Populate the Dashboard UI with Live Data ---
     if (dashboardGreeting) dashboardGreeting.textContent = `Welcome back, ${userData.full_name}!`;
     if (dashboard6dCode) dashboard6dCode.textContent = userData.six_d_code;
     if (dashboardFullAddress) {
@@ -315,21 +316,18 @@ function transitionToLoggedInState(userData) {
         dashboardMap.style.backgroundImage = `url(${staticMapUrl})`;
     }
 
-    // --- CRITICAL: Implement the 30-Day Update Logic ---
+    // --- Implement the 30-Day Update Logic ---
     if (dashboardUpdateBtn && dashboardUpdateInfo && userData.registered_at) {
         const lastRegisteredDate = new Date(userData.registered_at);
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
         if (lastRegisteredDate > thirtyDaysAgo) {
-            // User has updated in the last 30 days - LOCK the button
             dashboardUpdateBtn.disabled = true;
-            
             const nextUpdateDate = new Date(lastRegisteredDate.setDate(lastRegisteredDate.getDate() + 30));
             dashboardUpdateInfo.textContent = `Next update available on: ${nextUpdateDate.toLocaleDateString()}`;
             dashboardUpdateInfo.classList.remove('hidden');
         } else {
-            // User is eligible to update - ENABLE the button
             dashboardUpdateBtn.disabled = false;
             dashboardUpdateInfo.classList.add('hidden');
         }
@@ -345,10 +343,8 @@ function transitionToLoggedInState(userData) {
     const dashboardLink = document.querySelector('#bottom-nav .nav-link[data-view="dashboard"]');
     if (dashboardLink) dashboardLink.classList.add('active');
 
-    // After everything is done, update the info panel's button text
-    updateInitialInfoPanel();
-
-    updateAuthLink(); // Update to "Logout"
+    // --- Update the Auth Link to show "Logout" ---
+    updateAuthLink();
 }
 
 /**
