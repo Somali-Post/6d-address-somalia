@@ -21,10 +21,14 @@ app.use((req, res, next) => {
 app.use(cors({
   origin: [
     'https://6d-address-somalia.netlify.app', // For production
-    'http://127.0.0.1:5500'                  // For local development with Live Server
+    'http://127.0.0.1:5500',                  // For local development with Live Server
+    'http://localhost:3001'
   ]
 }));
 app.use(express.json()); // To parse JSON request bodies
+
+// Serve frontend static files
+app.use(express.static('public'));
 
 // --- Routes ---
 app.use('/api/auth', authRouter); // We will uncomment this later
