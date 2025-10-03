@@ -17,7 +17,7 @@ let drawnMapObjects = [];
 let gridLines = []; // State for the grid lines
 let currentAddress = null;
 let confirmationResult = null; // To store the Firebase confirmation result
-let resendInterval = null; // To store the timer interval
+let resendTimerInterval = null;
 
 // --- DOM Elements ---
 const DOM = {
@@ -57,8 +57,9 @@ const DOM = {
     loginError: document.getElementById('login-error'),
     authLink: document.getElementById('auth-link'),
     authLinkText: document.getElementById('auth-link-text'),
+    closeOtpModalBtn: document.getElementById('close-otp-modal-btn'),
     resendOtpBtn: document.getElementById('resend-otp-btn'),
-    otpTimer: document.getElementById('otp-timer'),
+    resendTimer: document.getElementById('resend-timer'),
 };
 
 // --- Helper Functions ---
@@ -107,19 +108,20 @@ function addEventListeners() {
     DOM.closeLoginModalBtn.addEventListener('click', () => toggleLoginModal(false));
     DOM.loginModalOverlay.addEventListener('click', () => toggleLoginModal(false));
     DOM.loginForm.addEventListener('submit', handleLoginSubmit);
+    DOM.closeOtpModalBtn.addEventListener('click', () => toggleOtpModal(false));
     DOM.resendOtpBtn.addEventListener('click', async () => {
-        if (DOM.resendOtpBtn.disabled) return;
-        console.log("Resending OTP...");
-        const fullPhoneNumber = DOM.otpPhoneDisplay.textContent;
-        try {
-            confirmationResult = await sendOtp(fullPhoneNumber);
-            startResendTimer(); // Restart the timer on success
-        } catch (error) {
-            console.error("Error resending OTP:", error);
-            DOM.otpError.textContent = "Failed to resend code. Please try again shortly.";
-            DOM.otpError.classList.remove('hidden');
-        }
-    });
+    if (DOM.resendOtpBtn.disabled) return;
+    console.log("Resending OTP...");
+    const fullPhoneNumber = DOM.otpPhoneDisplay.textContent;
+    try {
+        confirmationResult = await sendOtp(fullPhoneNumber);
+        startResendTimer(); // Restart the timer on success
+    } catch (error) {
+        console.error("Error resending OTP:", error);
+        DOM.otpError.textContent = "Failed to resend code. Please try again shortly.";
+        DOM.otpError.classList.remove('hidden');
+    }
+});
 
     // --- Bottom Navigation Logic ---
     const navLinks = document.querySelectorAll('#bottom-nav .nav-link');
@@ -377,23 +379,24 @@ function toggleOtpModal(show = false, phoneNumber = '') {
         DOM.otpPhoneDisplay.textContent = phoneNumber;
         DOM.otpError.classList.add('hidden');
         document.getElementById('otp-input').value = '';
-        startResendTimer();
+        startResendTimer(); // START THE TIMER
     }
 }
 
 function startResendTimer() {
-    clearInterval(resendInterval);
-    let secondsLeft = 30;
+    let countdown = 60;
     DOM.resendOtpBtn.disabled = true;
+    DOM.resendTimer.textContent = `(${countdown}s)`;
 
-    resendInterval = setInterval(() => {
-        if (secondsLeft <= 0) {
-            clearInterval(resendInterval);
-            DOM.otpTimer.textContent = '';
+    if (resendTimerInterval) clearInterval(resendTimerInterval);
+
+    resendTimerInterval = setInterval(() => {
+        countdown--;
+        DOM.resendTimer.textContent = `(${countdown}s)`;
+        if (countdown <= 0) {
+            clearInterval(resendTimerInterval);
             DOM.resendOtpBtn.disabled = false;
-        } else {
-            DOM.otpTimer.textContent = `(${secondsLeft}s)`;
-            secondsLeft--;
+            DOM.resendTimer.textContent = '';
         }
     }, 1000);
 }

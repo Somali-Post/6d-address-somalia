@@ -260,44 +260,75 @@ main {
 
 .hidden { display: none !important; }
 
-/* --- OTP Modal Styles --- */
-#otp-modal-overlay, #bottom-sheet-overlay {
+/* --- UNIFIED AUTH MODAL STYLES --- */
+#otp-modal-overlay, #login-modal-overlay {
     position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.6);
-    z-index: 1999; opacity: 0; transition: opacity 0.3s ease; pointer-events: none;
+    z-index: 2999; opacity: 0; transition: opacity 0.3s ease; pointer-events: none;
 }
-#otp-modal-overlay.is-open, #bottom-sheet-overlay.is-open { opacity: 1; pointer-events: auto; }
+#otp-modal-overlay.is-open, #login-modal-overlay.is-open { opacity: 1; pointer-events: auto; }
 
-#otp-modal {
+#otp-modal, #login-modal {
     position: fixed; top: 50%; left: 50%;
     width: 90%; max-width: 380px; background-color: var(--component-bg);
     border-radius: 16px; z-index: 3000;
+    border: 1px solid var(--border-color);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
     opacity: 0; transform: translate(-50%, -40%) scale(0.95); transition: all 0.3s ease;
 }
-#otp-modal.is-open { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+#otp-modal.is-open, #login-modal.is-open { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 
-.modal-header { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); }
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
 .modal-header h4 { margin: 0; font-size: 1.2rem; }
+
+.close-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 2rem;
+    line-height: 1;
+    padding: 0;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+.close-btn:hover { color: var(--text-primary); }
+
 .modal-content { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
 .modal-content p { margin: 0 0 0.5rem 0; color: var(--text-secondary); text-align: center; }
-#otp-input {
-    /* Core Styles */
-    font-size: 2rem;
-    text-align: center;
-    letter-spacing: 0.5em;
-    padding: 12px;
-    
-    /* Theming Fixes */
-    background-color: var(--background-color);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    color: var(--text-primary);
 
-    /* Layout Fix: This is the most important part */
-    width: 100%;
-    box-sizing: border-box; /* Prevents the input from overflowing its container */
+#otp-input {
+    font-size: 2rem; text-align: center; letter-spacing: 0.5em;
+    padding: 12px; background-color: var(--background-color);
+    border: 1px solid var(--border-color); border-radius: 8px;
+    color: var(--text-primary); width: 100%; box-sizing: border-box;
 }
+
 .error-message { color: #ff4d4d; text-align: center; font-size: 0.9rem; }
+
+.resend-container {
+    text-align: center;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+#resend-otp-btn {
+    background: none;
+    border: none;
+    color: var(--primary-blue);
+    cursor: pointer;
+    text-decoration: underline;
+    font-size: inherit;
+}
+#resend-otp-btn:disabled {
+    color: var(--text-secondary);
+    text-decoration: none;
+    cursor: not-allowed;
+}
 
 /* --- Polished Info Panel Styles --- */
 #info-panel-address {
