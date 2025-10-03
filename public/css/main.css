@@ -308,9 +308,56 @@ input:-webkit-autofill:active {
 }
 .form-group select:disabled { background-color: #2a3447; opacity: 0.7; }
 
-.phone-input-wrapper { display: flex; align-items: center; background-color: var(--background-color); border: 1px solid var(--border-color); border-radius: 8px; }
-.phone-input-wrapper span { padding: 12px; border-right: 1px solid var(--border-color); }
-.phone-input-wrapper input { border: none; flex-grow: 1; }
+/* --- UNIFIED PHONE INPUT STYLES --- */
+.phone-input-wrapper {
+    display: flex;
+    align-items: center;
+    background-color: var(--background-color); /* Use main background for the input area */
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    transition: border-color 0.2s ease;
+    width: 100%;
+}
+.phone-input-wrapper:focus-within {
+    border-color: var(--primary-blue); /* Highlight when focused */
+}
+
+.phone-input-wrapper span {
+    padding: 12px 16px;
+    border-right: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.phone-input-wrapper input {
+    /* CRITICAL: Reset browser styles */
+    border: none;
+    background: none;
+    outline: none;
+    
+    /* Layout & Theming */
+    flex-grow: 1; /* Fill available space */
+    padding: 12px 16px;
+    font-size: 1.1rem; /* Slightly larger font for numbers */
+    color: var(--text-primary);
+    width: 100%; /* Needed for flex calculation */
+}
+
+/* --- Login Modal "Register Now" Link --- */
+.register-link-container {
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-top: 1rem;
+}
+.register-link-container a {
+    color: var(--primary-blue);
+    text-decoration: none;
+    font-weight: 500;
+}
+.register-link-container a:hover {
+    text-decoration: underline;
+}
 
 .form-divider { border: 0; height: 1px; background-color: var(--border-color); margin: 2rem 0; }
 .static-display .code-display { margin-top: 0.5rem; }

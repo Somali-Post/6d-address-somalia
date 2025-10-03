@@ -240,6 +240,21 @@ function addEventListeners() {
         }
     });
     DOM.profileForm.addEventListener('submit', handleProfileUpdate);
+    DOM.registerNowLink.addEventListener('click', handleRegisterNowClick);
+}
+
+/**
+ * Handles the "Register now" link click from the login modal.
+ * Closes the modal and initiates the new user registration flow.
+ */
+function handleRegisterNowClick(e) {
+    e.preventDefault();
+    toggleLoginModal(false); // Close the login modal
+    
+    // A small delay to allow the modal to close before starting the animation
+    setTimeout(() => {
+        handleFindMyLocation(); // Trigger the GPS location flow
+    }, 350); // Duration should be slightly longer than the modal's CSS transition
 }
 
 /**
