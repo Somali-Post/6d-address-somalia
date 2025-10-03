@@ -161,9 +161,10 @@ router.get('/me', verifyFirebaseToken, async (req, res) => {
 
 // PUT /api/users/me/address
 // Updates the authenticated user's current address.
-// Enforces the 30-day update limit.
+// Enforces the 30-day update limit and archives the old address.
 router.put('/me/address', verifyFirebaseToken, async (req, res) => {
-  const { uid } = req.user; // From our verifyFirebaseToken middleware
+  // The user's UID is available from our verifyFirebaseToken middleware
+  const { uid } = req.user; 
   const {
     sixDCode,
     localitySuffix,
@@ -185,59 +186,64 @@ router.put('/me/address', verifyFirebaseToken, async (req, res) => {
     await db.query('BEGIN');
 
     // 1. Get the user's current address to check the registration date
-    const currentAddressResult = await db.query('SELECT * FROM addresses WHERE user_id = $1', [uid]);
+    const currentAddressResult = await db.query('SELECT * FROM addresses WHERE user_id = $1 FOR UPDATE', [uid]);
 
     if (currentAddressResult.rows.length === 0) {
-      // This case should ideally not happen for an existing user, but we handle it.
-      // We can proceed with the insert as if it's their first address.
-    } else {
-      const currentAddress = currentAddressResult.rows[0];
-      const lastRegisteredDate = new Date(currentAddress.registered_at);
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      // This case should not happen if a user is updating, but we handle it.
+      // We can treat this as an error or proceed as a first-time registration.
+      // For now, we'll send an error.
+      await db.query('ROLLBACK');
+      return res.status(404).json({ error: 'No existing address found to update.' });
+    }
+    
+    const currentAddress = currentAddressResult.rows[0];
+    const lastRegisteredDate = new Date(currentAddress.registered_at);
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-      if (lastRegisteredDate > thirtyDaysAgo) {
-        await db.query('ROLLBACK'); // Abort the transaction
-        return res.status(403).json({ 
-          error: 'Address can only be updated once every 30 days.',
-          nextUpdateAvailable: new Date(lastRegisteredDate.setDate(lastRegisteredDate.getDate() + 30))
-        });
-      }
-
-      // 2. If the check passes, archive the old address
-      const archiveQuery = `
-        INSERT INTO address_history(user_id, six_d_code, locality_suffix, region, city, district, neighborhood, location, registered_at)
-        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
-      `;
-      await db.query(archiveQuery, [
-        uid,
-        currentAddress.six_d_code,
-        currentAddress.locality_suffix,
-        currentAddress.region,
-        currentAddress.city,
-        currentAddress.district,
-        currentAddress.neighborhood,
-        currentAddress.location,
-        currentAddress.registered_at
-      ]);
+    // 2. Enforce the 30-day business rule
+    if (lastRegisteredDate > thirtyDaysAgo) {
+      await db.query('ROLLBACK'); // Abort the transaction
+      const nextUpdateDate = new Date(lastRegisteredDate.setDate(lastRegisteredDate.getDate() + 30));
+      return res.status(403).json({ 
+        error: 'Address can only be updated once every 30 days.',
+        nextUpdateAvailable: nextUpdateDate.toISOString()
+      });
     }
 
-    // 3. "Upsert" the new address. This will update the existing record.
+    // 3. If the check passes, archive the old address
+    const archiveQuery = `
+      INSERT INTO address_history(user_id, six_d_code, locality_suffix, region, city, district, neighborhood, location, registered_at)
+      VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    `;
+    await db.query(archiveQuery, [
+      uid,
+      currentAddress.six_d_code,
+      currentAddress.locality_suffix,
+      currentAddress.region,
+      currentAddress.city,
+      currentAddress.district,
+      currentAddress.neighborhood,
+      currentAddress.location,
+      currentAddress.registered_at
+    ]);
+
+    // 4. Update the existing address record with the new information
     const updateQuery = `
-      INSERT INTO addresses(user_id, six_d_code, locality_suffix, region, city, district, neighborhood, location, registered_at)
-      VALUES($1, $2, $3, $4, $5, $6, $7, ST_SetSRID(ST_MakePoint($8, $9), 4326), NOW())
-      ON CONFLICT (user_id) DO UPDATE SET
-        six_d_code = EXCLUDED.six_d_code,
-        locality_suffix = EXCLUDED.locality_suffix,
-        region = EXCLUDED.region,
-        city = EXCLUDED.city,
-        district = EXCLUDED.district,
-        neighborhood = EXCLUDED.neighborhood,
-        location = EXCLUDED.location,
+      UPDATE addresses 
+      SET 
+        six_d_code = $1,
+        locality_suffix = $2,
+        region = $3,
+        city = $4,
+        district = $5,
+        neighborhood = $6,
+        location = ST_SetSRID(ST_MakePoint($7, $8), 4326),
         registered_at = NOW()
+      WHERE user_id = $9
       RETURNING *;
     `;
-    const updatedAddressResult = await db.query(updateQuery, [uid, sixDCode, localitySuffix, region, city, district, neighborhood, lng, lat]);
+    const updatedAddressResult = await db.query(updateQuery, [sixDCode, localitySuffix, region, city, district, neighborhood, lng, lat, uid]);
 
     await db.query('COMMIT');
     
@@ -247,6 +253,67 @@ router.put('/me/address', verifyFirebaseToken, async (req, res) => {
     await db.query('ROLLBACK');
     console.error('Error updating address:', error);
     res.status(500).json({ error: 'An error occurred while updating the address.' });
+  }
+});
+
+// PUT /api/users/me
+// Updates the authenticated user's profile information (e.g., full_name).
+router.put('/me', async (req, res) => {
+  const { uid } = req.user; // From our verifyFirebaseToken middleware
+  const { fullName } = req.body;
+
+  if (!fullName || fullName.trim().length < 3) {
+    return res.status(400).json({ error: 'A valid full name is required.' });
+  }
+
+  try {
+    const result = await db.query(
+      'UPDATE users SET full_name = $1, updated_at = NOW() WHERE id = $2 RETURNING id, full_name, updated_at',
+      [fullName.trim(), uid]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    res.status(200).json({ success: true, updatedUser: result.rows[0] });
+
+  } catch (error) {
+    console.error('Error updating user profile:', error);
+    res.status(500).json({ error: 'An error occurred while updating your profile.' });
+  }
+});
+
+// GET /api/users/me/history
+// Fetches the address history for the authenticated user.
+router.get('/me/history', async (req, res) => {
+  const { uid } = req.user; // From our verifyFirebaseToken middleware
+
+  try {
+    const query = `
+      SELECT 
+        six_d_code,
+        region,
+        city,
+        district,
+        neighborhood,
+        registered_at,
+        archived_at
+      FROM 
+        address_history
+      WHERE 
+        user_id = $1
+      ORDER BY 
+        archived_at DESC; -- Show the most recently archived address first
+    `;
+
+    const result = await db.query(query, [uid]);
+
+    res.status(200).json(result.rows);
+
+  } catch (error) {
+    console.error('Error fetching address history:', error);
+    res.status(500).json({ error: 'An error occurred while fetching address history.' });
   }
 });
 

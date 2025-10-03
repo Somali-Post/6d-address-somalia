@@ -21,7 +21,7 @@
             <div id="info-panel">
                 <!-- Initial State -->
                 <div id="info-panel-initial" class="info-panel-view active">
-                    <button id="find-my-location-btn" class="btn">Find My 6D Address</button>
+                    <button id="find-my-location-btn" class="btn" data-i18n-key="info_find_my_address">Find My 6D Address</button>
                 </div>
                 <!-- Loading State -->
                 <div id="info-panel-loading" class="info-panel-view">
@@ -54,7 +54,7 @@
                         <p id="address-region"></p>
                     </div>
     
-                    <button id="register-this-address-btn" class="btn btn-primary">Register This Address</button>
+                    <button id="register-this-address-btn" class="btn btn-primary" data-i18n-key="info_register_this_address">Register This Address</button>
                 </div>
             </div>
         </div>
@@ -77,7 +77,7 @@
                     <div class="card-actions">
                         <button id="dashboard-update-btn" class="btn">Update My Address</button>
                         <button id="dashboard-share-btn" class="btn btn-secondary">Share My Address</button>
-                        <button id="logout-btn" class="btn btn-secondary btn-danger">Logout</button>
+                        <button id="logout-btn" class="btn btn-secondary btn-danger" data-i18n-key="nav_logout">Logout</button>
                     </div>
                     <div id="dashboard-update-info" class="update-info hidden">
                         <!-- This will show the 30-day limit message -->
@@ -89,21 +89,45 @@
         <!-- View 3: The Settings (This is the new, empty container) -->
         <div id="view-settings" class="main-view">
             <div class="settings-header">
-                <h1>Settings</h1>
+                <h1 data-i18n-key="settings_title">Settings</h1>
             </div>
             <div class="settings-content">
                 <!-- Section 1: Logged-In Users ONLY -->
                 <div id="settings-profile-management" class="settings-section hidden">
                     <h2>Profile Management</h2>
-                    <!-- Profile form will go here -->
-                    <p>Edit your name and phone number.</p>
+                    <form id="profile-form">
+                        <div class="form-group">
+                            <label for="profile-name">Full Name</label>
+                            <input type="text" id="profile-name" required minlength="3">
+                        </div>
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="text" id="profile-phone" disabled>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </form>
                 </div>
 
                 <!-- Section 2: All Users -->
                 <div id="settings-app-preferences" class="settings-section">
-                    <h2>Application Preferences</h2>
-                    <!-- Language and Theme toggles will go here -->
-                    <p>Choose your language and theme.</p>
+                    <h2 data-i18n-key="settings_preferences">Application Preferences</h2>
+                    <div class="form-group">
+                        <label for="language-select" data-i18n-key="settings_language">Language</label>
+                        <select id="language-select">
+                            <option value="so">Soomaali</option>
+                            <option value="en">English</option>
+                            <option value="ar">العربية</option>
+                        </select>
+                    </div>
+
+                    <!-- ADD THIS NEW BLOCK -->
+                    <div class="form-group theme-toggle-group">
+                        <label for="theme-toggle">Light Mode</label>
+                        <label class="switch">
+                            <input type="checkbox" id="theme-toggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
                 </div>
 
                 <!-- Section 3: Logged-In Users ONLY -->
@@ -114,26 +138,41 @@
                 </div>
             </div>
         </div>
+
+        <!-- View 4: The History -->
+        <div id="view-history" class="main-view">
+            <div class="history-header">
+                <h1 data-i18n-key="nav_history">Address History</h1>
+            </div>
+            <div id="history-content" class="history-content">
+                <!-- History items will be dynamically inserted here -->
+                <p class="loading-message">Loading history...</p>
+            </div>
+        </div>
     </main>
 
     <!-- The Primary Mobile Navigation -->
     <nav id="bottom-nav">
         <a href="#" class="nav-link active" data-view="map">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-            <span>Map</span>
+            <span data-i18n-key="nav_map">Map</span>
         </a>
         <a href="#" class="nav-link" data-view="dashboard">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
-            <span>Dashboard</span>
+            <span data-i18n-key="nav_dashboard">Dashboard</span>
         </a>
         <a href="#" class="nav-link" data-view="settings">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 0 2l-.15.08a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1 0-2l.15.08a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
-            <span>Settings</span>
+            <span data-i18n-key="nav_settings">Settings</span>
+        </a>
+        <a href="#" class="nav-link" data-view="history">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span data-i18n-key="nav_history">History</span>
         </a>
         <!-- ADD THIS NEW AUTH LINK -->
         <a href="#" class="nav-link" id="auth-link">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            <span id="auth-link-text">Login</span>
+            <span id="auth-link-text" data-i18n-key="nav_login">Login</span>
         </a>
     </nav>
     

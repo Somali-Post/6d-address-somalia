@@ -1,14 +1,24 @@
 :root {
+    /* Dark Theme (Default) */
     --background-color: #0c111f;
-    /* CHANGE THIS LINE */
-    --component-bg: rgba(30, 41, 59, 0.75); /* Was #111827, now a semi-transparent navy */
-    
+    --component-bg: rgba(30, 41, 59, 0.75);
     --border-color: rgba(122, 162, 255, 0.15);
     --primary-blue: #007aff;
     --text-primary: #f9fafb;
     --text-secondary: #9ca3af;
-    --bottom-nav-height: 60px;
     --hover-bg: rgba(55, 65, 81, 0.5);
+    --bottom-nav-height: 60px;
+}
+
+:root.light-mode {
+    /* Light Theme Overrides */
+    --background-color: #f0f2f5; /* Light grey background */
+    --component-bg: rgba(255, 255, 255, 0.75); /* Semi-transparent white */
+    --border-color: rgba(0, 0, 0, 0.1);
+    --primary-blue: #007aff; /* Blue remains the same */
+    --text-primary: #111827; /* Dark text */
+    --text-secondary: #6b7280; /* Grey text */
+    --hover-bg: rgba(0, 0, 0, 0.05);
 }
 
 /* FIX: Apply a better box model to all elements */
@@ -629,4 +639,119 @@ main {
 .toast.show {
     opacity: 1;
     transform: translate(-50%, -10px); /* Animate upwards slightly */
+}
+
+/* --- Settings View Styles --- */
+#view-settings {
+    padding: 1.5rem;
+    overflow-y: auto;
+    background-color: var(--background-color);
+}
+.settings-header h1 {
+    font-size: 1.75rem;
+    margin-bottom: 2rem;
+}
+.settings-section {
+    margin-bottom: 2.5rem;
+}
+.settings-section h2 {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+/* --- History View Styles --- */
+#view-history {
+    padding: 1.5rem;
+    overflow-y: auto;
+    background-color: var(--background-color);
+}
+.history-header h1 {
+    font-size: 1.75rem;
+    margin-bottom: 2rem;
+}
+.history-content .loading-message {
+    color: var(--text-secondary);
+    text-align: center;
+}
+.history-item {
+    background-color: var(--component-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+.history-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+.history-item-code {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+.history-item-dates {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-align: right;
+}
+.history-item-address {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+/* --- Theme Toggle Switch Styles --- */
+.theme-toggle-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 28px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #374151;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: var(--primary-blue);
+}
+
+input:checked + .slider:before {
+    transform: translateX(22px);
 }

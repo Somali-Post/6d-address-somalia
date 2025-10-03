@@ -5,6 +5,7 @@ import { GOOGLE_MAPS_API_KEY, somaliAdministrativeHierarchy, API_BASE_URL } from
 import { loadGoogleMapsAPI } from './utils.js';
 import * as MapCore from './map-core.js';
 import { setupRecaptcha, sendOtp, verifyOtp } from './firebase.js'; // Import Firebase functions
+import { locales } from './locales.js';
 
 // --- State ---
 let map, geocoder, placesService;
@@ -15,7 +16,9 @@ let confirmationResult = null;
 let appState = {
     isLoggedIn: false,
     user: null, // Will hold the complete user data object from our backend
-    sessionToken: null // Our backend's JWT
+    sessionToken: null, // Our backend's JWT
+    isUpdateMode: false, // ADD THIS LINE
+    currentLanguage: 'so', // Default to Somali
 };
 let resendTimerInterval = null;
 
@@ -64,6 +67,13 @@ const DOM = {
     settingsProfileManagement: document.getElementById('settings-profile-management'),
     settingsAppPreferences: document.getElementById('settings-app-preferences'),
     settingsDangerZone: document.getElementById('settings-danger-zone'),
+    dashboardUpdateBtn: document.getElementById('dashboard-update-btn'),
+    profileForm: document.getElementById('profile-form'),
+    profileNameInput: document.getElementById('profile-name'),
+    profilePhoneInput: document.getElementById('profile-phone'),
+    historyContent: document.getElementById('history-content'),
+    languageSelect: document.getElementById('language-select'),
+    themeToggle: document.getElementById('theme-toggle'),
 };
 
 // --- Helper Functions ---
@@ -78,11 +88,69 @@ async function init() {
         setupRecaptcha('recaptcha-container'); // Initialize Firebase reCAPTCHA
         addEventListeners();
         MapCore.updateDynamicGrid(map, gridLines); // Initial grid draw
+        const savedLanguage = localStorage.getItem('preferredLanguage') || 'so';
+        appState.currentLanguage = savedLanguage;
+        DOM.languageSelect.value = savedLanguage;
+        applyTranslations(); // Apply initial translations on page load
+        const savedTheme = localStorage.getItem('preferredTheme') || 'dark'; // Default to dark
+        applyTheme(savedTheme);
         checkSession(); // This should be the last call in the try block
     } catch (error) {
         console.error("Initialization Error:", error);
         document.body.innerHTML = `<div>Error: Could not load the map.</div>`;
     }
+}
+
+/**
+ * Applies translations to all elements with a data-i18n-key attribute.
+ */
+function applyTranslations() {
+    const language = appState.currentLanguage;
+    const translations = locales[language];
+    if (!translations) return;
+
+    document.querySelectorAll('[data-i18n-key]').forEach(element => {
+        const key = element.dataset.i18nKey;
+        if (translations[key]) {
+            element.textContent = translations[key];
+        }
+    });
+
+    // Handle language direction for Arabic
+    document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
+}
+
+/**
+ * Sets the application's language, saves the preference, and applies translations.
+ * @param {string} langCode The language code (e.g., 'en', 'so', 'ar').
+ */
+function setLanguage(langCode) {
+    appState.currentLanguage = langCode;
+    localStorage.setItem('preferredLanguage', langCode); // Save preference
+    applyTranslations();
+}
+
+/**
+ * Applies the theme by adding/removing a class on the html element.
+ * @param {string} theme The theme to apply ('light' or 'dark').
+ */
+function applyTheme(theme) {
+    if (theme === 'light') {
+        document.documentElement.classList.add('light-mode');
+        DOM.themeToggle.checked = true;
+    } else {
+        document.documentElement.classList.remove('light-mode');
+        DOM.themeToggle.checked = false;
+    }
+}
+
+/**
+ * Sets the application's theme and saves the preference to localStorage.
+ * @param {string} theme The theme to set ('light' or 'dark').
+ */
+function setTheme(theme) {
+    applyTheme(theme);
+    localStorage.setItem('preferredTheme', theme);
 }
 
 function addEventListeners() {
@@ -95,7 +163,7 @@ function addEventListeners() {
         MapCore.updateDynamicGrid(map, gridLines); // Redraw grid on zoom
     });
     DOM.findMyLocationBtn.addEventListener('click', handleFindMyLocation);
-    DOM.registerThisAddressBtn.addEventListener('click', handleShowRegistrationSheet);
+    DOM.registerThisAddressBtn.addEventListener('click', handlePrimaryInfoPanelAction);
     DOM.closeSheetBtn.addEventListener('click', closeRegistrationSheet);
     DOM.bottomSheetOverlay.addEventListener('click', closeRegistrationSheet);
     DOM.copyBtn.addEventListener('click', handleCopyAddress);
@@ -125,40 +193,35 @@ function addEventListeners() {
         DOM.otpError.classList.remove('hidden');
     }
 });
+    DOM.languageSelect.addEventListener('change', (e) => setLanguage(e.target.value));
+    DOM.themeToggle.addEventListener('change', (e) => {
+        setTheme(e.target.checked ? 'light' : 'dark');
+    });
 
     // --- Bottom Navigation Logic ---
-const navLinks = document.querySelectorAll('#bottom-nav .nav-link');
-navLinks.forEach(link => {
-    link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const viewName = link.dataset.view;
-        if (!viewName) return;
+    const navLinks = document.querySelectorAll('#bottom-nav .nav-link');
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const viewName = link.dataset.view;
+            if (!viewName) return;
 
-        // --- PERMISSION CHECK ---
-        const isProtectedView = (viewName === 'dashboard');
-        if (isProtectedView && !appState.isLoggedIn) {
-            showToast("Please log in to access your dashboard.");
-            return; // Stop the navigation
-        }
-        // --- END OF CHECK ---
-
-        // Remove active class from all links and views
-        navLinks.forEach(l => l.classList.remove('active'));
-        document.querySelectorAll('.main-view').forEach(v => v.classList.remove('active'));
-
-        // Add active class to the clicked link and corresponding view
-        link.classList.add('active');
-        const viewToShow = document.getElementById(`view-${viewName}`);
-        if (viewToShow) {
-            viewToShow.classList.add('active');
-        }
-
-        // If navigating to settings, update its view
-        if (viewName === 'settings') {
-            updateSettingsView();
-        }
+            // --- PERMISSION CHECK ---
+            const isProtectedView = (viewName === 'dashboard' || viewName === 'history');
+            if (isProtectedView && !appState.isLoggedIn) {
+                showToast("Please log in to access your dashboard.");
+                return; // Stop the navigation
+            }
+            // --- END OF CHECK ---
+            navigateToView(viewName);
+            if (viewName === 'history') {
+                renderHistory();
+            }
+        });
     });
-});
+
+    // --- Wire up the new Update Address button ---
+    DOM.dashboardUpdateBtn.addEventListener('click', handleUpdateAddressClick);
 
     // Connect the real logout button
     DOM.logoutBtn.addEventListener('click', () => {
@@ -166,6 +229,89 @@ navLinks.forEach(link => {
             logout();
         }
     });
+    DOM.profileForm.addEventListener('submit', handleProfileUpdate);
+}
+
+/**
+ * Fetches and renders the user's address history.
+ */
+async function renderHistory() {
+    if (!appState.isLoggedIn) return;
+
+    DOM.historyContent.innerHTML = `<p class="loading-message">Loading history...</p>`;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/users/me/history`, {
+            headers: { 'Authorization': `Bearer ${appState.sessionToken}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch history.');
+
+        const history = await response.json();
+
+        if (history.length === 0) {
+            DOM.historyContent.innerHTML = `<p class="loading-message">You have no previous address history.</p>`;
+            return;
+        }
+
+        DOM.historyContent.innerHTML = ''; // Clear loading message
+        history.forEach(item => {
+            const itemEl = document.createElement('div');
+            itemEl.className = 'history-item';
+            
+            const registeredDate = new Date(item.registered_at).toLocaleDateString();
+            const archivedDate = new Date(item.archived_at).toLocaleDateString();
+            const addressParts = [item.neighborhood, item.district, item.city, item.region].filter(Boolean).join(', ');
+
+            itemEl.innerHTML = `
+                <div class="history-item-header">
+                    <span class="history-item-code">${item.six_d_code}</span>
+                    <span class="history-item-dates">Used: ${registeredDate} - ${archivedDate}</span>
+                </div>
+                <p class="history-item-address">${addressParts}</p>
+            `;
+            DOM.historyContent.appendChild(itemEl);
+        });
+
+    } catch (error) {
+        console.error("Failed to render history:", error);
+        DOM.historyContent.innerHTML = `<p class="loading-message">Could not load address history.</p>`;
+    }
+}
+
+/**
+ * Handles the submission of the profile update form.
+ */
+async function handleProfileUpdate(event) {
+    event.preventDefault();
+    const newFullName = DOM.profileNameInput.value.trim();
+    if (newFullName === appState.user.full_name) {
+        showToast("No changes to save.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/users/me`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${appState.sessionToken}`
+            },
+            body: JSON.stringify({ fullName: newFullName })
+        });
+
+        if (!response.ok) throw new Error('Failed to update profile.');
+
+        const result = await response.json();
+        
+        // Update the local state with the new name
+        appState.user.full_name = result.updatedUser.full_name;
+        
+        showToast("Profile updated successfully!");
+
+    } catch (error) {
+        console.error("Profile update failed:", error);
+        showToast("Error: Could not update profile.");
+    }
 }
 
 /**
@@ -371,6 +517,10 @@ function transitionToLoggedInState(userData) {
         }
     }
 
+    // Also populate the settings form
+    if (DOM.profileNameInput) DOM.profileNameInput.value = userData.full_name;
+    if (DOM.profilePhoneInput) DOM.profilePhoneInput.value = userData.phone_number;
+
     // --- Switch to the Dashboard View ---
     document.getElementById('view-map').classList.remove('active');
     document.getElementById('view-dashboard').classList.add('active');
@@ -397,6 +547,30 @@ function logout() {
     updateSettingsView();
     window.location.reload(); // The simplest way to reset the UI to its initial logged-out state.
     updateAuthLink(); 
+}
+
+/**
+ * Initiates the address update flow.
+ */
+function handleUpdateAddressClick() {
+    if (!appState.isLoggedIn || appState.user.updateLocked) return;
+
+    appState.isUpdateMode = true;
+    
+    // Update the info panel's initial button text for the new context
+    DOM.findMyLocationBtn.textContent = "Cancel Update";
+    
+    // Navigate to the map view
+    navigateToView('map');
+}
+
+function navigateToView(viewName) {
+    document.querySelectorAll('.main-view').forEach(v => v.classList.remove('active'));
+    document.getElementById(`view-${viewName}`).classList.add('active');
+
+    document.querySelectorAll('#bottom-nav .nav-link').forEach(l => l.classList.remove('active'));
+    const navLink = document.querySelector(`#bottom-nav .nav-link[data-view="${viewName}"]`);
+    if (navLink) navLink.classList.add('active');
 }
 
 function toggleOtpModal(show = false, phoneNumber = '') {
@@ -524,6 +698,13 @@ function updateInfoPanel(data, accuracy) {
     } else {
         DOM.gpsAccuracyDisplay.classList.add('hidden');
     }
+
+    // Change button text based on mode
+    if (appState.isUpdateMode) {
+        DOM.registerThisAddressBtn.textContent = "Confirm New Address";
+    } else {
+        DOM.registerThisAddressBtn.textContent = "Register This Address";
+    }
 }
 
 function handleCopyAddress() {
@@ -585,10 +766,43 @@ function switchInfoPanelView(viewName) {
     if (viewToShow) viewToShow.classList.add('active');
 }
 
-function handleShowRegistrationSheet() {
-    if (!currentAddress) return alert("Please select a location on the map first.");
-    populateRegistrationForm();
-    openRegistrationSheet();
+/**
+ * Handles the primary action from the info panel.
+ * If in update mode, it confirms the new address.
+ * If not, it opens the registration sheet.
+ */
+async function handlePrimaryInfoPanelAction() {
+    if (!currentAddress) return;
+
+    if (appState.isUpdateMode) {
+        // --- UPDATE FLOW ---
+        if (confirm(`Are you sure you want to set this as your new official address?\n\n${currentAddress.sixDCode}\n${currentAddress.district}, ${currentAddress.region}`)) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/users/me/address`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${appState.sessionToken}`
+                    },
+                    body: JSON.stringify(currentAddress)
+                });
+
+                if (!response.ok) throw new Error('Failed to update address.');
+
+                alert("Address updated successfully!");
+                appState.isUpdateMode = false; // Exit update mode
+                checkSession(); // Re-fetch user data to update the dashboard
+
+            } catch (error) {
+                console.error("Address update failed:", error);
+                alert("There was an error updating your address. Please try again.");
+            }
+        }
+    } else {
+        // --- REGISTRATION FLOW ---
+        populateRegistrationForm();
+        openRegistrationSheet();
+    }
 }
 
 function populateRegistrationForm() {
