@@ -176,7 +176,8 @@ function addEventListeners() {
     DOM.regNeighborhood.addEventListener('change', () => DOM.regNeighborhoodManualWrapper.classList.toggle('hidden', DOM.regNeighborhood.value !== 'Other'));
     DOM.registrationForm.addEventListener('submit', handleRegistrationSubmit);
     DOM.otpForm.addEventListener('submit', handleOtpSubmit);
-    DOM.authLink.addEventListener('click', handleAuthClick);
+    // This is now handled by the navLinks loop below
+    // DOM.authLink.addEventListener('click', handleAuthClick); 
     DOM.closeLoginModalBtn.addEventListener('click', () => toggleLoginModal(false));
     DOM.loginModalOverlay.addEventListener('click', () => toggleLoginModal(false));
     DOM.loginForm.addEventListener('submit', handleLoginSubmit);
@@ -204,6 +205,13 @@ function addEventListeners() {
     navLinks.forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
+
+            // Special handling for the auth link
+            if (link.id === 'auth-link') {
+                handleAuthClick(e);
+                return;
+            }
+
             const viewName = link.dataset.view;
             if (!viewName) return;
 
@@ -940,7 +948,7 @@ async function handleOtpSubmit(event) {
                 sixDCode: currentAddress.sixDCode,
                 lat: currentAddress.lat,
                 lng: currentAddress.lng,
-                fullName: document.getElementById('reg-full-name').value,
+                fullName: document.getElementById('reg-name').value,
                 // The phone number is already captured when sending the OTP, 
                 // but we'll get it from the display in the OTP modal for consistency.
                 phoneNumber: DOM.otpPhoneDisplay.textContent,
