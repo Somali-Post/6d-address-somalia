@@ -72,14 +72,19 @@ const addressResult = await db.query(
       { expiresIn: '7d' }
     );
 
-    // 4. Send back the session token and success message
+    // 4. Send back a standardized response with the token and the full user profile.
+    const combinedUser = {
+      ...user,
+      ...addressResult.rows[0]
+    };
+    // We need to map the PostGIS 'location' object to lat/lng for consistency
+    combinedUser.lat = addressResult.rows[0].location.y;
+    combinedUser.lng = addressResult.rows[0].location.x;
+    delete combinedUser.location;
+
     res.status(201).json({
-      message: 'User registered successfully.',
-      token: sessionToken, // Send the token to the client
-      user: {
-        ...user,
-        ...addressResult.rows[0] // Combine user and address info
-      }
+      token: sessionToken,
+      user: combinedUser
     });
 
   } catch (error) {
