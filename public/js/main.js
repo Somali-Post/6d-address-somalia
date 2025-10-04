@@ -1025,12 +1025,17 @@ async function handleOtpSubmit(event) {
         }
         
         const authData = await authResponse.json();
+        
+        // The backend now returns the token AND the full user object.
+        // This is the definitive fix that avoids the race condition.
         localStorage.setItem('sessionToken', authData.token);
-        console.log("Backend session token received and stored.");
+        appState.sessionToken = authData.token; // Also update the state directly
+        console.log("Backend session token and user data received.");
 
-        // 3. Close the modal and reliably fetch the user data
+        // 3. Close the modal and transition directly to the logged-in state.
+        // DO NOT call checkSession() here. This is the critical fix.
         toggleOtpModal(false);
-        await checkSession(); // Use await to ensure it completes
+        transitionToLoggedInState(authData.user);
 
     } catch (error) {
         console.error("Final authentication step failed:", error);

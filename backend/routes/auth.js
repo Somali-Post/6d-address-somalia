@@ -49,8 +49,29 @@ router.post('/firebase', async (req, res) => {
       { expiresIn: '7d' }
     );
 
-    // 5. Send the session token back to the frontend.
-    res.status(200).json({ token: sessionToken });
+    // 5. Fetch the user's full address data to return with the token
+    const fullProfileResult = await db.query(`
+      SELECT
+        u.id, u.phone_number, u.full_name, u.created_at,
+        a.six_d_code, a.locality_suffix, a.region, a.city, a.district, a.neighborhood, a.registered_at,
+        ST_X(a.location) as lng,
+        ST_Y(a.location) as lat
+      FROM users u
+      LEFT JOIN addresses a ON u.id = a.user_id
+      WHERE u.id = $1
+    `, [user.id]);
+
+    // If a user exists but has no address (e.g., interrupted registration),
+    // they need to be directed to the registration flow.
+    if (fullProfileResult.rows.length === 0 || !fullProfileResult.rows[0].six_d_code) {
+        return res.status(404).json({ error: 'User profile is incomplete. Please complete the registration process.' });
+    }
+
+    // 6. Send the session token AND the full user profile back to the frontend.
+    res.status(200).json({ 
+        token: sessionToken,
+        user: fullProfileResult.rows[0] 
+    });
 
   } catch (error) {
     console.error('Firebase token verification failed:', error);
