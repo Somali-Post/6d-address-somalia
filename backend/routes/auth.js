@@ -25,21 +25,15 @@ router.post('/firebase', async (req, res) => {
     const { uid, phone_number } = decodedToken;
 
     // 2. Check if the user exists in our PostgreSQL database
-    let userResult = await db.query('SELECT * FROM users WHERE id = $1', [uid]);
-    let user = userResult.rows[0];
+    const userResult = await db.query('SELECT * FROM users WHERE id = $1', [uid]);
+    const user = userResult.rows[0];
 
-    // 3. If the user does not exist, create them
+    // 3. If the user does not exist in our system, they must register first.
+    // This endpoint is for logging in only.
     if (!user) {
-      // For a new user, the frontend must provide the full name
-      const { fullName } = req.body;
-      if (!fullName) {
-        return res.status(400).json({ error: 'Full name is required for new user registration.' });
-      }
-      const newUserResult = await db.query(
-        'INSERT INTO users(id, phone_number, full_name) VALUES($1, $2, $3) RETURNING *',
-        [uid, phone_number, fullName]
-      );
-      user = newUserResult.rows[0];
+      return res.status(404).json({ 
+        error: 'User not found. Please complete the registration process.' 
+      });
     }
 
     // 4. Generate our own internal session token (JWT)
