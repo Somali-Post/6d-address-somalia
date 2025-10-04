@@ -3,47 +3,28 @@ const express = require('express');
 const cors = require('cors');
 const https = require('https'); // ADD THIS
 const fs = require('fs');       // ADD THIS
+
+const authRouter = require('./routes/auth');
 const usersRouter = require('./routes/users');
-// We will create this auth router in the next step
-const authRouter = require('./routes/auth'); 
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Diagnostic middleware to log all incoming requests
-app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
-  console.log('Incoming Headers:', JSON.stringify(req.headers, null, 2));
-  next();
-});
-
 // --- Middleware ---
-// Enable CORS for our Netlify frontend
-// Enable CORS for our Netlify frontend AND our local development server
-app.use(cors({
-  origin: [
-    'https://6d-address-somalia.netlify.app', // For production
-    'http://127.0.0.1:5500',                  // For local development with Live Server
-  ]
-}));
-app.use(express.json()); // To parse JSON request bodies
-
-// Serve frontend static files
-app.use(express.static('public'));
+app.use(cors({ origin: ['https://6d-address-somalia.netlify.app', 'http://127.0.0.1:5500'] }));
+app.use(express.json());
 
 // --- Routes ---
-app.use('/api/auth', authRouter); // We will uncomment this later
+app.use('/api/auth', authRouter);
 app.use('/api/users', usersRouter);
+app.get('/api/health', (req, res) => res.status(200).json({ status: 'ok' }));
 
-app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'ok' });
+// --- HTTPS Server Setup ---
+const httpsOptions = {
+  key: fs.readFileSync('./localhost+2-key.pem'),
+  cert: fs.readFileSync('./localhost+2.pem')
+};
+
+https.createServer(httpsOptions, app).listen(PORT, () => {
+  console.log(`Server is running securely on https://localhost:${PORT}`);
 });
-
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
-
-// ADD THIS BLOCK FOR DIAGNOSTICS
-setInterval(() => {
-  console.log('Server heartbeat: Still running...');
-}, 5000); // Prints a message every 5 seconds
