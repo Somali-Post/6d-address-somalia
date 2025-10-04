@@ -540,12 +540,24 @@ function transitionToLoggedInState(userData) {
 
     // --- Create the Home Marker on the Map ---
     if (userData.lat && userData.lng) {
-        const homePosition = new google.maps.LatLng(userData.lat, userData.lng);
-        
-        // Clear any old marker first
-        if (homeMarker) homeMarker.setMap(null);
-        
-        homeMarker = MapCore.createHomeMarker(map, homePosition);
+    // --- DEFINITIVE FIX: Brute-force the data types to numbers ---
+    const lat = parseFloat(userData.lat);
+    const lng = parseFloat(userData.lng);
+
+    // Add a diagnostic log to be 100% certain
+    console.log("Creating LatLng for Home Marker with:", { lat, lng, typeOfLat: typeof lat, typeOfLng: typeof lng });
+
+    if (isNaN(lat) || isNaN(lng)) {
+        console.error("CRITICAL: Lat or Lng is not a valid number after parsing.", userData);
+        return; // Stop execution if the numbers are invalid
+    }
+    // --- END OF FIX ---
+
+    const homePosition = new google.maps.LatLng(lat, lng);
+    
+    if (homeMarker) homeMarker.setMap(null);
+    
+    homeMarker = MapCore.createHomeMarker(map, homePosition);
 
         // Center the map on the new home marker
         map.setCenter(homePosition);
