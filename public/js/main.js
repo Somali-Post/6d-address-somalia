@@ -491,9 +491,9 @@ async function checkSession() {
             throw new Error('Invalid or expired session token.');
         }
 
-        const userData = await response.json();
-        console.log("User data fetched successfully:", userData);
-        transitionToLoggedInState(userData);
+        const responseData = await response.json();
+        console.log("User data fetched successfully:", responseData.user);
+        transitionToLoggedInState(responseData.user);
 
     } catch (error) {
         console.error("Session check failed:", error);
@@ -867,9 +867,9 @@ async function handlePrimaryInfoPanelAction() {
 
                 if (!response.ok) throw new Error('Failed to update address.');
 
-                alert("Address updated successfully!");
+                alert("Address updated successfully! The page will now reload.");
                 appState.isUpdateMode = false; // Exit update mode
-                checkSession(); // Re-fetch user data to update the dashboard
+                window.location.reload(); // Reload the page to reflect the new address
 
             } catch (error) {
                 console.error("Address update failed:", error);

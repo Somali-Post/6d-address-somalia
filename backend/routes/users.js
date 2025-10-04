@@ -137,8 +137,8 @@ router.get('/me', verifySessionToken, async (req, res) => {
 
     const userData = result.rows[0];
 
-    // Respond with the combined user and address data
-    res.status(200).json(userData);
+    // Respond with the user data nested under a 'user' key for consistency with other auth endpoints.
+    res.status(200).json({ user: userData });
 
   } catch (error) {
     console.error('Error fetching user data:', error);
