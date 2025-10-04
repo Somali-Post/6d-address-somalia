@@ -996,91 +996,45 @@ async function handleOtpSubmit(event) {
     DOM.otpError.classList.add('hidden');
 
     try {
-        // 1. Verify OTP with Firebase (this is the same for both flows)
+        // 1. Verify OTP with Firebase to get the ID Token
         const result = await verifyOtp(confirmationResult, otpCode);
         const firebaseUser = result.user;
         const idToken = await firebaseUser.getIdToken();
         console.log("Firebase OTP Verified. User UID:", firebaseUser.uid);
 
-        let sessionToken;
-
+        const requestBody = { token: idToken };
+        
+        // If this is a registration flow, add the full name to the body
         if (appState.authFlow === 'register') {
-            // --- REGISTRATION PATH ---
-            console.log("Completing registration...");
-            
-            // Helper to get selected display text from a dropdown
-            const getSelectedText = (element) => element.options[element.selectedIndex].text;
-
-            // Gather all data from the form and currentAddress
-            const registrationData = {
-                sixDCode: currentAddress.sixDCode,
-                lat: currentAddress.lat,
-                lng: currentAddress.lng,
-                fullName: document.getElementById('reg-name').value,
-                // The phone number is already captured when sending the OTP, 
-                // but we'll get it from the display in the OTP modal for consistency.
-                phoneNumber: DOM.otpPhoneDisplay.textContent,
-                region: getSelectedText(DOM.regRegion),
-                city: getSelectedText(DOM.regCity),
-                district: getSelectedText(DOM.regDistrict),
-                // Handle the "Other" case for neighborhood
-                neighborhood: DOM.regNeighborhood.value === 'Other' 
-                    ? document.getElementById('reg-neighborhood-manual').value 
-                    : getSelectedText(DOM.regNeighborhood),
-                building: document.getElementById('reg-building').value,
-                floor: document.getElementById('reg-floor').value,
-                apartment: document.getElementById('reg-apartment').value,
-            };
-
-            // Call the register endpoint
-            const registerResponse = await fetch(`${API_BASE_URL}/api/users/register`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
-                body: JSON.stringify(registrationData),
-            });
-            if (!registerResponse.ok) {
-                 const errorData = await registerResponse.json(); // Try to get more info
-                 console.error("Registration API error:", errorData);
-                 throw new Error(errorData.message || 'Failed to save registration data.');
-            }
-            console.log("User data saved successfully.");
-
-            // Now, get a session token
-            const authResponse = await fetch(`${API_BASE_URL}/api/auth/firebase`, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${idToken}` 
-                },
-                // No body is needed if the token is in the header
-            });
-            if (!authResponse.ok) throw new Error('Backend authentication failed after registration.');
-            const authData = await authResponse.json();
-            sessionToken = authData.token;
-
-        } else {
-            // --- LOGIN PATH ---
-            console.log("Completing login...");
-            const authResponse = await fetch(`${API_BASE_URL}/api/auth/firebase`, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${idToken}`
-                },
-                 // No body is needed if the token is in the header
-            });
-            if (!authResponse.ok) throw new Error('Backend authentication failed.');
-            const authData = await authResponse.json();
-            sessionToken = authData.token;
+            requestBody.fullName = document.getElementById('reg-name').value;
         }
 
-        localStorage.setItem('sessionToken', sessionToken);
+        // 2. Call our single, unified auth endpoint
+        const authResponse = await fetch(`${API_BASE_URL}/api/auth/firebase`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}` // Send token in header as well for middleware
+            },
+            body: JSON.stringify(requestBody),
+        });
+
+        if (!authResponse.ok) {
+            const errorData = await authResponse.json();
+            throw new Error(errorData.error || 'Backend authentication failed.');
+        }
+        
+        const authData = await authResponse.json();
+        localStorage.setItem('sessionToken', authData.token);
+        console.log("Backend session token received and stored.");
+
+        // 3. Close the modal and reliably fetch the user data
         toggleOtpModal(false);
-        checkSession(); // This will fetch the user data and transition to the dashboard
+        await checkSession(); // Use await to ensure it completes
 
     } catch (error) {
-        console.error("OTP submission process failed:", error);
-        DOM.otpError.textContent = error.message || "Verification failed. Please try again.";
+        console.error("Final authentication step failed:", error);
+        DOM.otpError.textContent = "Authentication failed. Please try again.";
         DOM.otpError.classList.remove('hidden');
     } finally {
         submitButton.disabled = false;
