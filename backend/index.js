@@ -6,6 +6,14 @@
 // The fix is to load the "native" version of 'json-bigint' *before* any other
 // modules. This version uses the native BigInt object and does not modify
 // any prototypes.
+if (Date.prototype.toJSON.toString() !== 'function toJSON() { [native code] }') {
+  const originalToJSON = Date.prototype.toISOString;
+  Date.prototype.toJSON = function() {
+    return originalToJSON.call(this);
+  };
+  console.log("✅ Patched Date.prototype.toJSON to prevent JSON corruption.");
+}
+
 require('json-bigint')({ useNativeBigInt: true });
 
 require('dotenv').config();
