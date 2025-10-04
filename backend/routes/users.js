@@ -6,98 +6,46 @@ const { verifyFirebaseToken, verifySessionToken } = require('../middleware/auth'
 
 const router = express.Router();
 
-// The /register endpoint is special. It uses the Firebase token.
-router.post('/register', verifyFirebaseToken, async (req, res) => {
-  const { uid, phone_number } = req.user; // From the verified token
-  const {
-    fullName,
-    sixDCode,
-    localitySuffix,
-    region,
-    city,
-    district,
-    neighborhood,
-    lat,
-    lng
-  } = req.body;
-
-  if (!fullName || !sixDCode || !region || !city || !district || !lat || !lng) {
-    return res.status(400).json({ error: 'Missing required registration fields.' });
-  }
+// GET /api/users/me
+router.get('/me', verifySessionToken, async (req, res) => {
+  const { uid } = req.user;
 
   try {
-    // Use a database transaction to ensure atomicity
-    await db.query('BEGIN');
+    const query = `
+      SELECT
+        u.id, u.phone_number, u.full_name, u.created_at,
+        a.six_d_code, a.locality_suffix, a.region, a.city, a.district, a.neighborhood, a.registered_at,
+        ST_X(a.location) as lng,
+        ST_Y(a.location) as lat
+      FROM users u
+      JOIN addresses a ON u.id = a.user_id
+      WHERE u.id = $1;
+    `;
+    const result = await db.query(query, [uid]);
 
-    // 1. Check if user already exists, if not, create them
-    let userResult = await db.query('SELECT * FROM users WHERE id = $1', [uid]);
-    let user = userResult.rows[0];
-
-    if (!user) {
-      const newUserResult = await db.query(
-        'INSERT INTO users(id, phone_number, full_name) VALUES($1, $2, $3) RETURNING *',
-        [uid, phone_number, fullName]
-      );
-      user = newUserResult.rows[0];
-    } else {
-        // Optional: Update user's full name if it has changed
-        if (user.full_name !== fullName) {
-            await db.query('UPDATE users SET full_name = $1 WHERE id = $2', [fullName, uid]);
-        }
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User profile not found.' });
     }
 
-    // 2. Insert or update the address
-const addressResult = await db.query(
-  `INSERT INTO addresses(user_id, six_d_code, locality_suffix, region, city, district, neighborhood, location)
-   VALUES($1, $2, $3, $4, $5, $6, $7, ST_SetSRID(ST_MakePoint($8, $9), 4326))
-   ON CONFLICT (user_id) DO UPDATE SET
-     six_d_code = EXCLUDED.six_d_code,
-     locality_suffix = EXCLUDED.locality_suffix,
-     region = EXCLUDED.region,
-     city = EXCLUDED.city,
-     district = EXCLUDED.district,
-     neighborhood = EXCLUDED.neighborhood,
-     location = EXCLUDED.location,
-     registered_at = NOW()
-   RETURNING *`,
-  [uid, sixDCode, localitySuffix, region, city, district, neighborhood, lng, lat] // IMPORTANT: Note the order is lng, then lat for PostGIS
-);
-    
-    await db.query('COMMIT');
+    let userData = result.rows[0];
 
-    // 3. Generate our internal session token
-    const sessionToken = jwt.sign(
-      { userId: user.id, phone: user.phone_number },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
+    // --- DEFINITIVE FIX: Manually format the date fields to ISO strings ---
+    userData.created_at = new Date(userData.created_at).toISOString();
+    userData.registered_at = new Date(userData.registered_at).toISOString();
 
-    // 4. Send back a standardized response with the token and the full user profile.
-    const combinedUser = {
-      ...user,
-      ...addressResult.rows[0]
-    };
-    // We need to map the PostGIS 'location' object to lat/lng for consistency
-    combinedUser.lat = addressResult.rows[0].location.y;
-    combinedUser.lng = addressResult.rows[0].location.x;
-    delete combinedUser.location;
-
-    res.status(201).json({
-      token: sessionToken,
-      user: combinedUser
-    });
+    // Respond with the user data directly (the frontend expects the object, not { user: ... })
+    res.status(200).json(userData);
 
   } catch (error) {
-    await db.query('ROLLBACK');
-    console.error('Registration failed:', error);
-    res.status(500).json({ error: 'An error occurred during registration.' });
+    console.error('Error fetching user data:', error);
+    res.status(500).json({ error: 'An error occurred while fetching user data.' });
   }
 });
-
 
 // --- ALL OTHER USER ROUTES ---
 // All subsequent routes for a logged-in user must be protected by our internal session token.
 
+// GET /api/users/me
 // GET /api/users/me
 router.get('/me', verifySessionToken, async (req, res) => {
   // The user's UID is available from our verifySessionToken middleware
