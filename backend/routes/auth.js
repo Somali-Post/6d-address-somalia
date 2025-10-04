@@ -6,14 +6,39 @@ const jwt = require('jsonwebtoken');
 const router = express.Router();
 
 router.post('/firebase', async (req, res) => {
-  // ... (The top part of the function remains the same: getting the token, verifying it, finding/creating the user)
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Authorization header with Bearer token is required.' });
+  }
+  const token = authHeader.split(' ')[1];
+
+  // --- DEFINITIVE FIX: Declare variables in the outer scope ---
+  let uid;
+  let phone_number;
 
   try {
-    // ... (The logic to verify the token and get/create the 'user' object is the same)
-    
-    // --- START OF DEFINITIVE FIX ---
+    // 1. Verify the Firebase ID token
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    uid = decodedToken.uid; // Assign to the outer scope variable
+    phone_number = decodedToken.phone_number; // Assign to the outer scope variable
 
-    // 1. Fetch the full user profile data, which may have non-standard dates
+    // 2. Check if the user exists in our PostgreSQL database
+    let userResult = await db.query('SELECT * FROM users WHERE id = $1', [uid]);
+    let user = userResult.rows[0];
+
+    if (!user) {
+      const { fullName } = req.body;
+      if (!fullName) {
+        return res.status(400).json({ error: 'User profile not found. Please complete the registration process.' });
+      }
+      const newUserResult = await db.query(
+        'INSERT INTO users(id, phone_number, full_name) VALUES($1, $2, $3) RETURNING *',
+        [uid, phone_number, fullName]
+      );
+      user = newUserResult.rows[0];
+    }
+
+    // 3. Fetch the full user profile data
     const fullProfileQuery = `
       SELECT
         u.id, u.phone_number, u.full_name, u.created_at,
@@ -28,44 +53,28 @@ router.post('/firebase', async (req, res) => {
         return res.status(404).json({ error: 'Could not retrieve user profile.' });
     }
     
-    const fullUserProfile = fullProfileResult.rows[0];
+    let fullUserProfile = fullProfileResult.rows[0];
 
-    // 2. Generate the session token (this is safe)
+    // Manually format the date fields to ISO strings
+    fullUserProfile.created_at = new Date(fullUserProfile.created_at).toISOString();
+    if (fullUserProfile.registered_at) {
+      fullUserProfile.registered_at = new Date(fullUserProfile.registered_at).toISOString();
+    }
+
     const sessionToken = jwt.sign(
       { userId: user.id, phone: user.phone_number },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
 
-    // 3. Manually construct a clean, safe JSON string.
-    // This bypasses any and all global prototype pollution or serialization bugs.
-    const jsonResponse = JSON.stringify({
+    res.status(200).json({ 
         token: sessionToken,
-        user: {
-            id: fullUserProfile.id,
-            phone_number: fullUserProfile.phone_number,
-            full_name: fullUserProfile.full_name,
-            created_at: new Date(fullUserProfile.created_at).toISOString(), // Force ISO format
-            six_d_code: fullUserProfile.six_d_code,
-            locality_suffix: fullUserProfile.locality_suffix,
-            region: fullUserProfile.region,
-            city: fullUserProfile.city,
-            district: fullUserProfile.district,
-            neighborhood: fullUserProfile.neighborhood,
-            registered_at: fullUserProfile.registered_at ? new Date(fullUserProfile.registered_at).toISOString() : null, // Force ISO format
-            lng: fullUserProfile.lng,
-            lat: fullUserProfile.lat
-        }
+        user: fullUserProfile 
     });
-
-    // 4. Send the manually constructed JSON string with the correct header.
-    res.setHeader('Content-Type', 'application/json');
-    res.status(200).send(jsonResponse);
-
-    // --- END OF DEFINITIVE FIX ---
 
   } catch (error) {
     console.error('Authentication process failed:', error);
+    // The error was here. Now 'uid' is accessible.
     res.status(401).json({ error: 'Authentication failed.' });
   }
 });
