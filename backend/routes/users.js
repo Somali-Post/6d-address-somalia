@@ -1,4 +1,5 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');
 const db = require('../db');
 // IMPORT BOTH MIDDLEWARE FUNCTIONS
 const { verifyFirebaseToken, verifySessionToken } = require('../middleware/auth');
@@ -72,11 +73,13 @@ const addressResult = await db.query(
     );
 
     // 4. Send back the session token and success message
-    res.status(201).json({ 
-        message: 'User registered successfully.',
-        token: sessionToken,
-        user: user,
-        address: addressResult.rows[0]
+    res.status(201).json({
+      message: 'User registered successfully.',
+      token: sessionToken, // Send the token to the client
+      user: {
+        ...user,
+        ...addressResult.rows[0] // Combine user and address info
+      }
     });
 
   } catch (error) {
@@ -92,7 +95,7 @@ const addressResult = await db.query(
 
 // GET /api/users/me
 router.get('/me', verifySessionToken, async (req, res) => {
-  // The user's UID is available from our verifyFirebaseToken middleware
+  // The user's UID is available from our verifySessionToken middleware
   const { uid } = req.user;
 
   try {
@@ -140,8 +143,8 @@ router.get('/me', verifySessionToken, async (req, res) => {
 
 // PUT /api/users/me/address
 router.put('/me/address', verifySessionToken, async (req, res) => {
-  // The user's UID is available from our verifyFirebaseToken middleware
-  const { uid } = req.user; 
+  // The user's UID is available from our verifySessionToken middleware
+  const { uid } = req.user;
   const {
     sixDCode,
     localitySuffix,
@@ -235,7 +238,7 @@ router.put('/me/address', verifySessionToken, async (req, res) => {
 
 // PUT /api/users/me
 router.put('/me', verifySessionToken, async (req, res) => {
-  const { uid } = req.user; // From our verifyFirebaseToken middleware
+  const { uid } = req.user; // From our verifySessionToken middleware
   const { fullName } = req.body;
 
   if (!fullName || fullName.trim().length < 3) {
@@ -262,7 +265,7 @@ router.put('/me', verifySessionToken, async (req, res) => {
 
 // GET /api/users/me/history
 router.get('/me/history', verifySessionToken, async (req, res) => {
-  const { uid } = req.user; // From our verifyFirebaseToken middleware
+  const { uid } = req.user; // From our verifySessionToken middleware
 
   try {
     const query = `
