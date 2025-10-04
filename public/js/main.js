@@ -466,7 +466,7 @@ async function checkSession() {
     const token = localStorage.getItem('sessionToken');
     if (!token) {
         console.log("No session token found. User is logged out.");
-        updateAuthLink(); // Ensure the auth link shows "Login"
+        updateAuthLink();
         return;
     }
 
@@ -474,14 +474,20 @@ async function checkSession() {
     appState.sessionToken = token;
 
     try {
+        // --- NEW: Add a timeout controller ---
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15-second timeout
+
         const response = await fetch(`${API_BASE_URL}/api/users/me`, {
             headers: {
                 'Authorization': `Bearer ${token}`
-            }
+            },
+            signal: controller.signal // Attach the controller to the fetch request
         });
 
+        clearTimeout(timeoutId); // Clear the timeout if the request succeeds
+
         if (!response.ok) {
-            // If the token is invalid (e.g., expired), the backend will return a 4xx error.
             throw new Error('Invalid or expired session token.');
         }
 
@@ -491,7 +497,10 @@ async function checkSession() {
 
     } catch (error) {
         console.error("Session check failed:", error);
-        logout(); // Clear the invalid token and reset the UI
+        if (error.name === 'AbortError') {
+            alert("The server is taking too long to respond. Please try refreshing the page.");
+        }
+        logout();
     }
 }
 
