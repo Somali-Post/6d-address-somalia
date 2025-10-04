@@ -1,3 +1,13 @@
+// The root cause of the JSON parsing error is the 'json-bigint' library,
+// which is a dependency of 'gcp-metadata' (which is used by 'google-auth-library').
+// By default, 'json-bigint' modifies the global Date.prototype.toJSON,
+// which corrupts the JSON output of Express's res.json().
+//
+// The fix is to load the "native" version of 'json-bigint' *before* any other
+// modules. This version uses the native BigInt object and does not modify
+// any prototypes.
+require('json-bigint')({ useNativeBigInt: true });
+
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');

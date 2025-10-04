@@ -6,6 +6,11 @@ types.setTypeParser(1184, (stringValue) => {
   return stringValue; 
 });
 
+// Also handle TIMESTAMP without time zone, just in case.
+types.setTypeParser(1114, (stringValue) => {
+  return stringValue;
+});
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
