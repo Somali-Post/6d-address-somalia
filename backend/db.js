@@ -1,10 +1,9 @@
 const { Pool, types } = require('pg');
 
-// --- DEFINITIVE FIX: Tell node-postgres to NOT parse timestamps ---
-// This ensures that TIMESTAMPTZ columns (OID 1184) are always returned
-// as standard ISO 8601 strings, which is the most reliable format for JSON.
+// This is the definitive fix.
+// It tells node-postgres to return TIMESTAMPTZ columns as raw strings.
 types.setTypeParser(1184, (stringValue) => {
-  return stringValue; // Return the raw string from the database
+  return stringValue; 
 });
 
 const pool = new Pool({
