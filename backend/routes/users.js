@@ -8,46 +8,6 @@ const router = express.Router();
 
 // GET /api/users/me
 router.get('/me', verifySessionToken, async (req, res) => {
-  const { uid } = req.user;
-
-  try {
-    const query = `
-      SELECT
-        u.id, u.phone_number, u.full_name, u.created_at,
-        a.six_d_code, a.locality_suffix, a.region, a.city, a.district, a.neighborhood, a.registered_at,
-        ST_X(a.location) as lng,
-        ST_Y(a.location) as lat
-      FROM users u
-      JOIN addresses a ON u.id = a.user_id
-      WHERE u.id = $1;
-    `;
-    const result = await db.query(query, [uid]);
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'User profile not found.' });
-    }
-
-    let userData = result.rows[0];
-
-    // --- DEFINITIVE FIX: Manually format the date fields to ISO strings ---
-    userData.created_at = new Date(userData.created_at).toISOString();
-    userData.registered_at = new Date(userData.registered_at).toISOString();
-
-    // Respond with the user data directly (the frontend expects the object, not { user: ... })
-    res.status(200).json(userData);
-
-  } catch (error) {
-    console.error('Error fetching user data:', error);
-    res.status(500).json({ error: 'An error occurred while fetching user data.' });
-  }
-});
-
-// --- ALL OTHER USER ROUTES ---
-// All subsequent routes for a logged-in user must be protected by our internal session token.
-
-// GET /api/users/me
-// GET /api/users/me
-router.get('/me', verifySessionToken, async (req, res) => {
   // The user's UID is available from our verifySessionToken middleware
   const { uid } = req.user;
 
@@ -84,6 +44,10 @@ router.get('/me', verifySessionToken, async (req, res) => {
     }
 
     const userData = result.rows[0];
+
+    // --- DEFINITIVE FIX: Manually format the date fields to ISO strings ---
+    userData.created_at = new Date(userData.created_at).toISOString();
+    userData.registered_at = new Date(userData.registered_at).toISOString();
 
     // Respond with the user data nested under a 'user' key for consistency with other auth endpoints.
     res.status(200).json({ user: userData });

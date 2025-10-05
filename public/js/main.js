@@ -989,56 +989,50 @@ async function handleOtpSubmit(event) {
     DOM.otpError.classList.add('hidden');
 
     try {
-    // 1. Verify OTP with Firebase (this part is working)
     const result = await verifyOtp(confirmationResult, otpCode);
     const firebaseUser = result.user;
     const idToken = await firebaseUser.getIdToken();
-    console.log("Firebase OTP Verified. User UID:", firebaseUser.uid);
 
     const requestBody = { token: idToken };
+    
+    // If this is a registration, we must also send the user's full name
+    // and the complete address details for the backend to save.
     if (appState.authFlow === 'register') {
         requestBody.fullName = document.getElementById('reg-name').value;
+        // Add the address details
+        requestBody.address = {
+            sixDCode: currentAddress.sixDCode,
+            localitySuffix: currentAddress.localitySuffix,
+            region: DOM.regRegion.options[DOM.regRegion.selectedIndex].text,
+            city: DOM.regCity.options[DOM.regCity.selectedIndex].text,
+            district: DOM.regDistrict.options[DOM.regDistrict.selectedIndex].text,
+            neighborhood: DOM.regNeighborhood.value === 'Other' 
+                ? document.getElementById('reg-neighborhood-manual').value 
+                : DOM.regNeighborhood.value,
+            lat: currentAddress.lat,
+            lng: currentAddress.lng
+        };
     }
 
-    // 2. Call our unified auth endpoint
+    // Call our single, unified auth endpoint
     const authResponse = await fetch(`${API_BASE_URL}/api/auth/firebase`, {
         method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${idToken}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody),
     });
 
-    // --- DEFINITIVE DIAGNOSTIC STEP ---
-    const rawText = await authResponse.text();
-    console.log("RAW RESPONSE FROM BACKEND:", rawText);
-    // --- END OF DIAGNOSTIC STEP ---
-
-    // --- FINAL HYPOTHESIS TEST: Is JSON.stringify polluted? ---
-    try {
-        console.log("Testing global JSON.stringify with the received user data...");
-        const parsedForTest = JSON.parse(rawText); // Use native parse just for this test
-        const stringified = JSON.stringify(parsedForTest.user);
-        console.log("Global JSON.stringify result:", stringified);
-    } catch (e) {
-        console.error("Global JSON.stringify threw an error:", e);
-    }
-    // --- END OF FINAL HYPOTHESIS TEST ---
-
     if (!authResponse.ok) {
-        console.error('Backend returned an error page or message:', rawText);
-        throw new Error(`Server responded with status ${authResponse.status}`);
+        const errorData = await authResponse.json();
+        throw new Error(errorData.error || 'Backend authentication failed.');
     }
-
-    // Now, use the sanitized parser to avoid global JSON pollution.
-    const authData = safeJsonParse(rawText);
     
+    const authData = await authResponse.json();
     localStorage.setItem('sessionToken', authData.token);
     appState.sessionToken = authData.token;
-    console.log("Backend session token and user data received.");
+    console.log("Backend session token received.");
 
     toggleOtpModal(false);
+    // Transition to the dashboard using the user data returned from the auth endpoint
     transitionToLoggedInState(authData.user);
 
 } catch (error) {
