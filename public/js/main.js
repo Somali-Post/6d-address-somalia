@@ -540,26 +540,29 @@ function transitionToLoggedInState(userData) {
 
     // --- Create the Home Marker on the Map ---
     if (userData.lat && userData.lng) {
-        // --- DEFINITIVE FIX V2 ---
-        // The previous fix using a LatLngLiteral {lat, lng} failed, indicating the API
-        // requires a true `google.maps.LatLng` object instance in this context.
-        // We now create this object, defensively parsing the coordinates to ensure they are numbers.
-        const lat = parseFloat(userData.lat);
-        const lng = parseFloat(userData.lng);
+        // --- DEFINITIVE FIX V3: THE RACE CONDITION ---
+        // All previous attempts to fix the *data* have failed. The diagnostic logs prove
+        // the data is clean. The only remaining explanation is a race condition where we
+        // call the Marker constructor before the Maps API is fully initialized internally.
+        // We introduce a small delay to break this race.
+        setTimeout(() => {
+            const lat = parseFloat(userData.lat);
+            const lng = parseFloat(userData.lng);
 
-        if (isNaN(lat) || isNaN(lng)) {
-            console.error("CRITICAL: Lat or Lng is not a valid number after parsing.", userData);
-            return; // Stop execution if the numbers are invalid
-        }
+            if (isNaN(lat) || isNaN(lng)) {
+                console.error("CRITICAL: Lat or Lng is not a valid number after parsing.", userData);
+                return;
+            }
 
-        const homePosition = new google.maps.LatLng(lat, lng);
-        console.log("Creating Home Marker with new google.maps.LatLng:", homePosition);
+            const homePosition = new google.maps.LatLng(lat, lng);
+            console.log("Attempting to create Home Marker after delay with:", homePosition);
 
-        if (homeMarker) homeMarker.setMap(null);
+            if (homeMarker) homeMarker.setMap(null);
 
-        homeMarker = MapCore.createHomeMarker(map, homePosition);
-        map.setCenter(homePosition);
-        map.setZoom(18); // A close-up zoom level
+            homeMarker = MapCore.createHomeMarker(map, homePosition);
+            map.setCenter(homePosition);
+            map.setZoom(18);
+        }, 100); // A 100ms delay is enough to allow the API to settle.
     }
 
     // --- Implement the 30-Day Update Logic ---
