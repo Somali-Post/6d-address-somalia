@@ -121,6 +121,19 @@ export function createHomeMarker(map, position) {
         anchor: new google.maps.Point(12, 22),
     };
 
+    // --- DEEP BUG DIAGNOSTIC ---
+    // Hypothesis: The global 'map' object itself is being polluted with user data.
+    // The Marker constructor then inspects this 'map' object and its internal parser
+    // fails when it encounters the timestamp string in the user data.
+    console.log("--- MAP OBJECT INSPECTION (PRE-MARKER) ---");
+    for (const key in map) {
+        // We only want to see properties attached directly to the object, not its prototype.
+        if (Object.prototype.hasOwnProperty.call(map, key)) {
+            console.log(`OWN PROPERTY ON MAP OBJECT: ${key}`, map[key]);
+        }
+    }
+    console.log("--- END MAP OBJECT INSPECTION ---");
+
     const marker = new google.maps.Marker({
         position: position,
         map: map,
