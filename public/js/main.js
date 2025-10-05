@@ -6,6 +6,7 @@ import { loadGoogleMapsAPI } from './utils.js';
 import * as MapCore from './map-core.js';
 import { setupRecaptcha, sendOtp, verifyOtp } from './firebase.js'; // Import Firebase functions
 import { locales } from './locales.js';
+import { safeJsonParse } from './json-sanitizer.js'; // Import the safe JSON parser
 
 // --- State ---
 let map, geocoder, placesService;
@@ -1046,8 +1047,8 @@ async function handleOtpSubmit(event) {
         throw new Error(`Server responded with status ${authResponse.status}`);
     }
 
-    // Now, try to parse the text we logged. This is where the error will likely happen.
-    const authData = JSON.parse(rawText);
+    // Now, use the sanitized parser to avoid global JSON pollution.
+    const authData = safeJsonParse(rawText);
     
     localStorage.setItem('sessionToken', authData.token);
     appState.sessionToken = authData.token;
