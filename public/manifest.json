@@ -1,0 +1,21 @@
+{
+  "short_name": "6D Address",
+  "name": "6D Address Somalia",
+  "description": "Your official digital address in Somalia.",
+  "icons": [
+    {
+      "src": "/assets/logo-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/assets/logo-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#111827",
+  "background_color": "#0c111f"
+}
