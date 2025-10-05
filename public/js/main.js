@@ -540,26 +540,20 @@ function transitionToLoggedInState(userData) {
 
     // --- Create the Home Marker on the Map ---
     if (userData.lat && userData.lng) {
-    // --- DEFINITIVE FIX: Brute-force the data types to numbers ---
-    const lat = parseFloat(userData.lat);
-    const lng = parseFloat(userData.lng);
+        // --- DEFINITIVE FIX ---
+        // The root cause is passing the entire `userData` object to a Google Maps function.
+        // The function's internal parser then fails on the `created_at` timestamp's 'Z'.
+        // We fix this by creating a new, clean object containing only `lat` and `lng`.
+        const homePosition = { lat: userData.lat, lng: userData.lng };
 
-    // Add a diagnostic log to be 100% certain
-    console.log("Creating LatLng for Home Marker with:", { lat, lng, typeOfLat: typeof lat, typeOfLng: typeof lng });
+        // The previous diagnostic log was helpful, but we can be confident in this fix.
+        console.log("Creating Home Marker with sanitized position:", homePosition);
 
-    if (isNaN(lat) || isNaN(lng)) {
-        console.error("CRITICAL: Lat or Lng is not a valid number after parsing.", userData);
-        return; // Stop execution if the numbers are invalid
-    }
-    // --- END OF FIX ---
+        if (homeMarker) homeMarker.setMap(null);
 
-    const homePosition = new google.maps.LatLng(lat, lng);
-    
-    if (homeMarker) homeMarker.setMap(null);
-    
-    homeMarker = MapCore.createHomeMarker(map, homePosition);
-
-        // Center the map on the new home marker
+        // Pass the clean `homePosition` object. The Marker constructor and setCenter
+        // are happy with a LatLngLiteral object like {lat, lng}.
+        homeMarker = MapCore.createHomeMarker(map, homePosition);
         map.setCenter(homePosition);
         map.setZoom(18); // A close-up zoom level
     }
