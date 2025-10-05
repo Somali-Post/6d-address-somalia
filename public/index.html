@@ -17,9 +17,12 @@
     <main>
         <!-- View 1: The Map (Now wrapped in a container) -->
         <div id="view-map" class="main-view active">
-            <!-- ADD THIS LOGO CONTAINER BACK -->
             <div id="logo-container">
-                <img src="assets/logo-somalia.png" alt="6D Address Logo">
+                <!-- Light Mode Logo (Visible by default) -->
+                <img class="logo-light" src="assets/logo-somalia.png" alt="6D Address Logo">
+                
+                <!-- Dark Mode Logo (Hidden by default) -->
+                <img class="logo-dark" src="assets/logo-somalia-dark.png" alt="6D Address Logo">
             </div>
 
             <div id="map"></div>

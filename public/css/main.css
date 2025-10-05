@@ -48,70 +48,65 @@ main {
     height: 100%;
 }
 
-/* --- FINAL LOGO STYLES --- */
+/* --- FINAL ADAPTIVE LOGO STYLES --- */
 
-/* 1. Default Mobile Styles */
+/* 1. Shared Styles for both logos */
 #logo-container {
     position: absolute;
     top: 20px;
     left: 20px;
     z-index: 500;
-    
-    /* FIX: Lighter, semi-transparent white background for better visibility */
-    background-color: rgba(255, 255, 255, 0.8); 
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    
-    border: 1px solid rgba(255, 255, 255, 0.2); /* Lighter border */
     border-radius: 16px;
-    
-    /* FIX: Reduced padding to make the logo image larger */
-    padding: 8px; 
-    
+    padding: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     transition: transform 0.2s ease;
-    
-    /* Keep the container size */
     width: 100px;
     height: 100px;
 }
-
 #logo-container:hover {
     transform: scale(1.05);
 }
-
 #logo-container img {
     display: block;
-    /* FIX: Make the image fill the container */
-    width: 100%; 
+    width: 100%;
     height: 100%;
     object-fit: contain;
 }
 
-/* 2. Desktop Override Styles */
-@media (min-width: 768px) {
-    
-    /* On desktop, we switch to the container-based sizing */
-    #logo-container {
-    /* FIX: Changed to a semi-transparent white */
-    background-color: rgba(255, 255, 255, 0.8); 
-    padding: 8px;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    width: 150px; /* Set the container width */
-    height: auto;
-    
-    /* FIX: Re-added the blur effect for a frosted glass look */
+/* 2. Light Mode Styles */
+:root.light-mode #logo-container {
+    background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white */
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+:root.light-mode .logo-dark {
+    display: none; /* Hide dark logo in light mode */
+}
+:root.light-mode .logo-light {
+    display: block; /* Show light logo in light mode */
 }
 
-     /* The image now fills the container */
-    #logo-container img {
-        width: 100%; /* Fills the 150px container */
-        height: auto;
-    } /* <-- ADD THIS CLOSING BRACE */
+/* 3. Dark Mode Styles (Default) */
+:root #logo-container {
+    background-color: var(--component-bg); /* Use our navy color */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border-color);
+}
+:root .logo-dark {
+    display: block; /* Show dark logo in dark mode */
+}
+:root .logo-light {
+    display: none; /* Hide light logo in dark mode */
+}
 
+/* 4. Desktop Override (applies to both themes) */
+@media (min-width: 768px) {
+    #logo-container {
+        width: 150px;
+        height: auto;
+    }
 }
 /* --- Bottom Navigation Bar --- */
 #bottom-nav {
