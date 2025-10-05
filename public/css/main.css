@@ -66,8 +66,8 @@ main {
 #logo-container:hover {
     transform: scale(1.05);
 }
+/* This rule is too general, so we will handle display properties in the specific rules below */
 #logo-container img {
-    display: block;
     width: 100%;
     height: 100%;
     object-fit: contain;
@@ -80,10 +80,11 @@ main {
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--border-color);
 }
-.logo-light {
+/* Make selectors more specific to override the general 'img' rule */
+#logo-container .logo-light {
     display: none; /* Hide light logo by default */
 }
-.logo-dark {
+#logo-container .logo-dark {
     display: block; /* Show dark logo by default */
 }
 
@@ -94,10 +95,11 @@ main {
     -webkit-backdrop-filter: blur(8px);
     border: 1px solid rgba(0, 0, 0, 0.1);
 }
-.light-mode .logo-light {
+/* Make selectors more specific */
+.light-mode #logo-container .logo-light {
     display: block; /* Show light logo in light mode */
 }
-.light-mode .logo-dark {
+.light-mode #logo-container .logo-dark {
     display: none; /* Hide dark logo in light mode */
 }
 
