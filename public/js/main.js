@@ -995,9 +995,10 @@ async function handleOtpSubmit(event) {
 
         const requestBody = { token: idToken };
         
-        // If this is a registration flow, we must send the full name AND the address details.
         if (appState.authFlow === 'register') {
             requestBody.fullName = document.getElementById('reg-name').value;
+            
+            // --- THIS IS THE MISSING CODE ---
             requestBody.address = {
                 sixDCode: currentAddress.sixDCode,
                 localitySuffix: currentAddress.localitySuffix,
@@ -1010,6 +1011,7 @@ async function handleOtpSubmit(event) {
                 lat: currentAddress.lat,
                 lng: currentAddress.lng
             };
+            // --- END OF MISSING CODE ---
         }
 
         // Call our SINGLE, UNIFIED auth endpoint for both login and registration.
