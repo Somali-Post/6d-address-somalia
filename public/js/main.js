@@ -506,28 +506,46 @@ async function checkSession() {
 }
 
 /**
- * Transitions the UI to the logged-in state and populates the dashboard.
+ * Transitions the UI to the logged-in state and populates the dashboard,
+ * correctly handling the map's asynchronous loading.
  */
 function transitionToLoggedInState(userData) {
+    console.log("Step 1: Entering transitionToLoggedInState. User data received:", userData);
     appState.isLoggedIn = true;
     appState.user = userData;
 
-    // --- Step 1: Populate all NON-MAP elements immediately ---
+    // --- Step 2: Populate all NON-MAP elements immediately ---
     const dashboardGreeting = document.getElementById('dashboard-greeting');
-    // ... (get all other dashboard DOM elements)
+    const dashboard6dCode = document.getElementById('dashboard-6d-code');
+    const dashboardFullAddress = document.getElementById('dashboard-full-address');
+    const dashboardRegisteredTo = document.getElementById('dashboard-registered-to');
+    const dashboardUpdateBtn = document.getElementById('dashboard-update-btn');
+    const dashboardUpdateInfo = document.getElementById('dashboard-update-info');
 
     if (dashboardGreeting) dashboardGreeting.textContent = `Welcome back, ${userData.full_name}!`;
-    // ... (populate all other dashboard text elements like the 6D code, address, etc.)
-    
-    // --- Step 2: Wait for the map to be ready before touching it ---
-    // The 'idle' event fires when the map has finished loading and moving.
-    google.maps.event.addListenerOnce(map, 'idle', () => {
-        console.log("Map is now idle. Proceeding with map-related UI updates.");
+    if (dashboard6dCode) dashboard6dCode.textContent = userData.six_d_code;
+    if (dashboardFullAddress) {
+        const addressParts = [userData.neighborhood, userData.district, userData.city, userData.region].filter(Boolean);
+        dashboardFullAddress.textContent = addressParts.join(', ');
+    }
+    if (dashboardRegisteredTo) {
+        const registeredDate = new Date(userData.registered_at).toLocaleDateString();
+        dashboardRegisteredTo.textContent = `Registered to: ${userData.full_name} (Since: ${registeredDate})`;
+    }
+    console.log("Step 2: Dashboard text populated successfully.");
 
-        // --- Step 3: Now it is safe to perform map operations ---
+    // --- Step 3: Wait for the map to be fully idle before performing map operations ---
+    google.maps.event.addListenerOnce(map, 'idle', () => {
+        console.log("Step 3: Map is now idle. Proceeding with map-related UI updates.");
+
         if (userData.lat && userData.lng) {
             const lat = parseFloat(userData.lat);
             const lng = parseFloat(userData.lng);
+
+            if (isNaN(lat) || isNaN(lng)) {
+                console.error("CRITICAL: Lat or Lng is not a valid number after parsing.", userData);
+                return;
+            }
 
             // Render the Static Mini-Map
             const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=18&size=600x300&maptype=roadmap&markers=color:blue%7C${lat},${lng}&key=${GOOGLE_MAPS_API_KEY}`;
@@ -541,12 +559,23 @@ function transitionToLoggedInState(userData) {
             // Center the main map on the home marker
             map.setCenter(homePosition);
             map.setZoom(18);
+            console.log("Step 3.1: All map operations completed successfully.");
         }
     });
 
-    // --- Step 4: Update all other non-map UI elements ---
-    // (This includes the 30-day update logic, nav links, etc.)
-    // ...
+    // --- Step 4: Update all other non-map UI elements immediately ---
+    if (DOM.profileNameInput) DOM.profileNameInput.value = userData.full_name;
+    if (DOM.profilePhoneInput) DOM.profilePhoneInput.value = userData.phone_number;
+
+    if (dashboardUpdateBtn && dashboardUpdateInfo && userData.registered_at) {
+        // ... (The 30-day update logic remains the same)
+    }
+
+    navigateToView('dashboard');
+    updateAuthLink();
+    updateSettingsView();
+    updateInitialInfoPanel();
+    console.log("Step 4: Final non-map UI state updated.");
 }
 
 /**
