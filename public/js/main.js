@@ -989,60 +989,61 @@ async function handleOtpSubmit(event) {
     DOM.otpError.classList.add('hidden');
 
     try {
-    const result = await verifyOtp(confirmationResult, otpCode);
-    const firebaseUser = result.user;
-    const idToken = await firebaseUser.getIdToken();
+        const result = await verifyOtp(confirmationResult, otpCode);
+        const firebaseUser = result.user;
+        const idToken = await firebaseUser.getIdToken();
 
-    const requestBody = { token: idToken };
-    
-    // If this is a registration, we must also send the user's full name
-    // and the complete address details for the backend to save.
-    if (appState.authFlow === 'register') {
-        requestBody.fullName = document.getElementById('reg-name').value;
-        // Add the address details
-        requestBody.address = {
-            sixDCode: currentAddress.sixDCode,
-            localitySuffix: currentAddress.localitySuffix,
-            region: DOM.regRegion.options[DOM.regRegion.selectedIndex].text,
-            city: DOM.regCity.options[DOM.regCity.selectedIndex].text,
-            district: DOM.regDistrict.options[DOM.regDistrict.selectedIndex].text,
-            neighborhood: DOM.regNeighborhood.value === 'Other' 
-                ? document.getElementById('reg-neighborhood-manual').value 
-                : DOM.regNeighborhood.value,
-            lat: currentAddress.lat,
-            lng: currentAddress.lng
-        };
+        const requestBody = { token: idToken };
+        
+        // If this is a registration flow, we must send the full name AND the address details.
+        if (appState.authFlow === 'register') {
+            requestBody.fullName = document.getElementById('reg-name').value;
+            requestBody.address = {
+                sixDCode: currentAddress.sixDCode,
+                localitySuffix: currentAddress.localitySuffix,
+                region: DOM.regRegion.options[DOM.regRegion.selectedIndex].text,
+                city: DOM.regCity.options[DOM.regCity.selectedIndex].text,
+                district: DOM.regDistrict.options[DOM.regDistrict.selectedIndex].text,
+                neighborhood: DOM.regNeighborhood.value === 'Other' 
+                    ? document.getElementById('reg-neighborhood-manual').value 
+                    : DOM.regNeighborhood.value,
+                lat: currentAddress.lat,
+                lng: currentAddress.lng
+            };
+        }
+
+        // Call our SINGLE, UNIFIED auth endpoint for both login and registration.
+        const authResponse = await fetch(`${API_BASE_URL}/api/auth/firebase`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}` // Still needed for middleware
+            },
+            body: JSON.stringify(requestBody),
+        });
+
+        if (!authResponse.ok) {
+            const errorData = await authResponse.json();
+            throw new Error(errorData.error || 'Backend authentication failed.');
+        }
+        
+        const authData = await authResponse.json();
+        localStorage.setItem('sessionToken', authData.token);
+        appState.sessionToken = authData.token;
+        console.log("Backend session token received.");
+
+        toggleOtpModal(false);
+        // Transition to the dashboard using the complete user data returned from the auth endpoint.
+        transitionToLoggedInState(authData.user);
+
+    } catch (error) {
+        console.error("Final authentication step failed:", error);
+        DOM.otpError.textContent = "Authentication failed. Please try again.";
+        DOM.otpError.classList.remove('hidden');
+    } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Verify & Proceed';
     }
-
-    // Call our single, unified auth endpoint
-    const authResponse = await fetch(`${API_BASE_URL}/api/auth/firebase`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
-    });
-
-    if (!authResponse.ok) {
-        const errorData = await authResponse.json();
-        throw new Error(errorData.error || 'Backend authentication failed.');
-    }
-    
-    const authData = await authResponse.json();
-    localStorage.setItem('sessionToken', authData.token);
-    appState.sessionToken = authData.token;
-    console.log("Backend session token received.");
-
-    toggleOtpModal(false);
-    // Transition to the dashboard using the user data returned from the auth endpoint
-    transitionToLoggedInState(authData.user);
-
-} catch (error) {
-    console.error("Final authentication step failed:", error);
-    DOM.otpError.textContent = "Authentication failed. Please try again.";
-    DOM.otpError.classList.remove('hidden');
-} finally {
-    submitButton.disabled = false;
-    submitButton.textContent = 'Verify & Proceed';
-}
 }
 
 document.addEventListener('DOMContentLoaded', init);
