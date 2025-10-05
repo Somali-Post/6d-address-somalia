@@ -504,9 +504,12 @@ async function checkSession() {
             throw new Error('Invalid or expired session token.');
         }
 
-        const userData = await response.json();
-        console.log("User data fetched successfully:", userData);
-        transitionToLoggedInState(userData);
+        const responseData = await response.json();
+        if (!responseData.user) {
+            throw new Error('User data not found in server response.');
+        }
+        console.log("User data fetched successfully:", responseData.user);
+        transitionToLoggedInState(responseData.user);
 
     } catch (error) {
         console.error("Session check failed:", error);
