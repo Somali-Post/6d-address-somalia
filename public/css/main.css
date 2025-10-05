@@ -59,7 +59,7 @@ main {
     border-radius: 16px;
     padding: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    transition: transform 0.2s ease, background-color 0.3s ease;
+    transition: transform 0.2s ease, background-color 0.3s ease, border-color 0.3s ease;
     width: 100px;
     height: 100px;
 }
@@ -654,10 +654,7 @@ input:-webkit-autofill:active {
 }
 #login-modal.is-open { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 
-/* Re-use existing modal/form styles for consistency */
-#login-modal .modal-header, #login-modal .modal-content {
-    /* These will inherit styles from the OTP modal's classes */
-}
+
 .otp-resend-container {
     margin-top: 1rem;
     text-align: center;
