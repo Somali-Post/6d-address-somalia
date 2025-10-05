@@ -2,8 +2,9 @@
 export const GOOGLE_MAPS_API_KEY = "YOUR_GOOGLE_MAPS_API_KEY_HERE";
 
 // The base URL for our custom backend API
-// For local development, this will be http://localhost:3001
-export const API_BASE_URL = "https://ungamboled-valencia-ungushing.ngrok-free.dev";
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+// For local development, use http://localhost:3001. For production, use a relative path.
+export const API_BASE_URL = isLocal ? 'http://localhost:3001' : '';
 
 // This is our authoritative source for UI dropdowns.
 export const somaliAdministrativeHierarchy = {
