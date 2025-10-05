@@ -50,7 +50,7 @@ main {
 
 /* --- FINAL ADAPTIVE LOGO STYLES --- */
 
-/* 1. Shared Styles for both logos */
+/* 1. Shared Styles for the logo container */
 #logo-container {
     position: absolute;
     top: 20px;
@@ -59,7 +59,7 @@ main {
     border-radius: 16px;
     padding: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    transition: transform 0.2s ease;
+    transition: transform 0.2s ease, background-color 0.3s ease;
     width: 100px;
     height: 100px;
 }
@@ -73,32 +73,32 @@ main {
     object-fit: contain;
 }
 
-/* 2. Light Mode Styles */
-:root.light-mode #logo-container {
-    background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white */
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(0, 0, 0, 0.1);
-}
-:root.light-mode .logo-dark {
-    display: none; /* Hide dark logo in light mode */
-}
-:root.light-mode .logo-light {
-    display: block; /* Show light logo in light mode */
-}
-
-/* 3. Dark Mode Styles (Default) */
-:root #logo-container {
-    background-color: var(--component-bg); /* Use our navy color */
+/* 2. Default State (Dark Mode) */
+#logo-container {
+    background-color: var(--component-bg);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--border-color);
 }
-:root .logo-dark {
-    display: block; /* Show dark logo in dark mode */
+.logo-light {
+    display: none; /* Hide light logo by default */
 }
-:root .logo-light {
-    display: none; /* Hide light logo in dark mode */
+.logo-dark {
+    display: block; /* Show dark logo by default */
+}
+
+/* 3. Light Mode Override */
+.light-mode #logo-container {
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+.light-mode .logo-light {
+    display: block; /* Show light logo in light mode */
+}
+.light-mode .logo-dark {
+    display: none; /* Hide dark logo in light mode */
 }
 
 /* 4. Desktop Override (applies to both themes) */
