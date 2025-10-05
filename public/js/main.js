@@ -1042,6 +1042,17 @@ async function handleOtpSubmit(event) {
     console.log("RAW RESPONSE FROM BACKEND:", rawText);
     // --- END OF DIAGNOSTIC STEP ---
 
+    // --- FINAL HYPOTHESIS TEST: Is JSON.stringify polluted? ---
+    try {
+        console.log("Testing global JSON.stringify with the received user data...");
+        const parsedForTest = JSON.parse(rawText); // Use native parse just for this test
+        const stringified = JSON.stringify(parsedForTest.user);
+        console.log("Global JSON.stringify result:", stringified);
+    } catch (e) {
+        console.error("Global JSON.stringify threw an error:", e);
+    }
+    // --- END OF FINAL HYPOTHESIS TEST ---
+
     if (!authResponse.ok) {
         console.error('Backend returned an error page or message:', rawText);
         throw new Error(`Server responded with status ${authResponse.status}`);
