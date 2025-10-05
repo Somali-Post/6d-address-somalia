@@ -1,3 +1,7 @@
+// The very first thing we do is load environment variables,
+// so they are available to all other modules.
+require('dotenv').config();
+
 // The root cause of the JSON parsing error is the 'json-bigint' library,
 // which is a dependency of 'gcp-metadata' (which is used by 'google-auth-library').
 // By default, 'json-bigint' modifies the global Date.prototype.toJSON,
@@ -16,7 +20,6 @@ if (Date.prototype.toJSON.toString() !== 'function toJSON() { [native code] }') 
 
 require('json-bigint')({ useNativeBigInt: true });
 
-require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 
