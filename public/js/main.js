@@ -540,19 +540,23 @@ function transitionToLoggedInState(userData) {
 
     // --- Create the Home Marker on the Map ---
     if (userData.lat && userData.lng) {
-        // --- DEFINITIVE FIX ---
-        // The root cause is passing the entire `userData` object to a Google Maps function.
-        // The function's internal parser then fails on the `created_at` timestamp's 'Z'.
-        // We fix this by creating a new, clean object containing only `lat` and `lng`.
-        const homePosition = { lat: userData.lat, lng: userData.lng };
+        // --- DEFINITIVE FIX V2 ---
+        // The previous fix using a LatLngLiteral {lat, lng} failed, indicating the API
+        // requires a true `google.maps.LatLng` object instance in this context.
+        // We now create this object, defensively parsing the coordinates to ensure they are numbers.
+        const lat = parseFloat(userData.lat);
+        const lng = parseFloat(userData.lng);
 
-        // The previous diagnostic log was helpful, but we can be confident in this fix.
-        console.log("Creating Home Marker with sanitized position:", homePosition);
+        if (isNaN(lat) || isNaN(lng)) {
+            console.error("CRITICAL: Lat or Lng is not a valid number after parsing.", userData);
+            return; // Stop execution if the numbers are invalid
+        }
+
+        const homePosition = new google.maps.LatLng(lat, lng);
+        console.log("Creating Home Marker with new google.maps.LatLng:", homePosition);
 
         if (homeMarker) homeMarker.setMap(null);
 
-        // Pass the clean `homePosition` object. The Marker constructor and setCenter
-        // are happy with a LatLngLiteral object like {lat, lng}.
         homeMarker = MapCore.createHomeMarker(map, homePosition);
         map.setCenter(homePosition);
         map.setZoom(18); // A close-up zoom level
@@ -699,7 +703,10 @@ function closeRegistrationSheet() {
 function handleFindMyLocation() {
     if (appState.isLoggedIn && appState.user) {
         // --- LOGGED-IN USER: "Show My Registered Address" ---
-        const homePosition = new google.maps.LatLng(appState.user.lat, appState.user.lng);
+        // PROACTIVE FIX: Defensively parse floats to prevent latent bug.
+        const lat = parseFloat(appState.user.lat);
+        const lng = parseFloat(appState.user.lng);
+        const homePosition = new google.maps.LatLng(lat, lng);
         animateToLocation(map, homePosition, (finalLatLng) => {
             processLocation(finalLatLng); // Re-process the home location
         });
@@ -769,7 +776,10 @@ function updateInfoPanel(data, accuracy) {
         DOM.registerThisAddressBtn.classList.add('hidden'); // Hide the register button
 
         // Calculate and display the distance from their home address
-        const homePosition = new google.maps.LatLng(appState.user.lat, appState.user.lng);
+        // PROACTIVE FIX: Defensively parse floats to prevent latent bug.
+        const homeLat = parseFloat(appState.user.lat);
+        const homeLng = parseFloat(appState.user.lng);
+        const homePosition = new google.maps.LatLng(homeLat, homeLng);
         const selectedPosition = new google.maps.LatLng(data.lat, data.lng);
         const distance = calculateDistance(homePosition, selectedPosition);
         
