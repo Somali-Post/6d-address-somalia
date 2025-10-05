@@ -97,7 +97,19 @@ async function init() {
         applyTranslations(); // Apply initial translations on page load
         const savedTheme = localStorage.getItem('preferredTheme') || 'dark'; // Default to dark
         applyTheme(savedTheme);
-        checkSession(); // This should be the last call in the try block
+        checkSession(); // This should be the last call before hiding the loader
+
+        // --- NEW LOADER HIDE LOGIC ---
+        const loaderWrapper = document.getElementById('loader-wrapper');
+        if (loaderWrapper) {
+            loaderWrapper.style.opacity = '0';
+            // Wait for the fade-out transition to finish before removing the element
+            setTimeout(() => {
+                loaderWrapper.style.display = 'none';
+            }, 500); // This duration must match the transition time in the CSS
+        }
+        // --- END OF NEW LOGIC ---
+
     } catch (error) {
         console.error("Initialization Error:", error);
         document.body.innerHTML = `<div>Error: Could not load the map.</div>`;

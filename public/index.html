@@ -12,8 +12,61 @@
     <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
     <link rel="stylesheet" href="css/main.css">
     <link rel="manifest" href="/manifest.json">
+
+    <!-- Google Fonts for the loader -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap" rel="stylesheet">
+    
+    <!-- INLINED CRITICAL CSS FOR THE LOADER -->
+    <style>
+      body {
+        background-color: #0c111f; /* Set the background immediately */
+      }
+      .loader-wrapper {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        width: 100vw;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 9999;
+        background-color: #0c111f;
+        transition: opacity 0.5s ease;
+      }
+      .loader { width: 64px; height: 64px; display: inline-block; position: relative; }
+      .loader::after, .loader::before { content: ''; position: absolute; inset: 0; margin: auto; }
+      .loader::after { width: 64px; height: 64px; border: 3px solid #ff0000; animation: spin 2s linear infinite; }
+      .loader::before { width: 40px; height: 40px; border: 3px solid #00ff00; animation: spinBack 1.5s linear infinite; }
+      .loader > span { position: absolute; top: 50%; left: 50%; width: 16px; height: 16px; background: #007bff; border-radius: 2px; transform: translate(-50%, -50%); animation: pulse 1.1s ease-in-out infinite; }
+      .loader-text { margin-top: 24px; font-size: 16px; font-family: 'Poppins', sans-serif; font-weight: 600; letter-spacing: 0.5px; color: #ffffff; }
+      .dots { display: inline-block; width: 2.2em; text-align: left; }
+      .dot { opacity: 0; font-weight: 700; display: inline-block; transform: translateY(-1px); animation: dotCycle 1.8s infinite; }
+      .dot.red { color: #ff0000; animation-delay: 0s; }
+      .dot.green { color: #00ff00; animation-delay: 0.3s; }
+      .dot.blue { color: #007bff; animation-delay: 0.6s; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      @keyframes spinBack { to { transform: rotate(-360deg); } }
+      @keyframes pulse { 0%, 100% { transform: translate(-50%, -50%) scale(1); } 50% { transform: translate(-50%, -50%) scale(1.28); } }
+      @keyframes dotCycle { 0% { opacity: 0; } 20% { opacity: 1; } 85% { opacity: 1; } 100% { opacity: 0; } }
+    </style>
 </head>
 <body>
+    <!-- NEW LOADER HTML -->
+    <div id="loader-wrapper" class="loader-wrapper">
+        <span class="loader"><span></span></span>
+        <div class="loader-text">
+            Loading 6D Somalia
+            <span class="dots">
+                <span class="dot red">.</span>
+                <span class="dot green">.</span>
+                <span class="dot blue">.</span>
+            </span>
+        </div>
+    </div>
     <main>
         <!-- View 1: The Map (Now wrapped in a container) -->
         <div id="view-map" class="main-view active">
