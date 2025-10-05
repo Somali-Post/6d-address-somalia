@@ -237,7 +237,7 @@ function addEventListeners() {
     // Connect the real logout button
     DOM.logoutBtn.addEventListener('click', () => {
         if (confirm('Are you sure you want to log out?')) {
-            logout();
+            logout({ shouldReload: true });
         }
     });
     DOM.profileForm.addEventListener('submit', handleProfileUpdate);
@@ -374,7 +374,7 @@ function handleAuthClick(e) {
     if (appState.isLoggedIn) {
         // User is logged in, so this is a logout button
         if (confirm('Are you sure you want to log out?')) {
-            logout();
+            logout({ shouldReload: true });
         }
     } else {
         // User is logged out, so this is a login button
@@ -580,17 +580,26 @@ function transitionToLoggedInState(userData) {
 
 /**
  * Logs the user out, clears the session, and resets the UI.
+ * @param {object} options - Optional parameters.
+ * @param {boolean} options.shouldReload - If true, the page will reload after logout.
  */
-function logout() {
+function logout(options = {}) {
+    const { shouldReload = false } = options;
+
     localStorage.removeItem('sessionToken');
     appState.isLoggedIn = false;
     appState.user = null;
     appState.sessionToken = null;
+
+    // Reset UI to logged-out state
+    updateAuthLink();
     updateSettingsView();
-    // In logout()
-    DOM.findMyLocationBtn.textContent = "Find My 6D Address";
-    window.location.reload(); // The simplest way to reset the UI to its initial logged-out state.
-    updateAuthLink(); 
+    updateInitialInfoPanel(); 
+    navigateToView('map'); // Go back to the default view
+
+    if (shouldReload) {
+        window.location.reload();
+    }
 }
 
 /**
