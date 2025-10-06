@@ -709,10 +709,10 @@ function startResendTimer() {
 function openRegistrationSheet() {
     DOM.bottomSheetOverlay.classList.remove('hidden');
     DOM.bottomSheetModal.classList.remove('hidden');
-    applyTranslations(); // Re-apply translations to the newly visible elements
     setTimeout(() => {
         DOM.bottomSheetOverlay.classList.add('is-open');
         DOM.bottomSheetModal.classList.add('is-open');
+        applyTranslations(); // Re-apply translations to the newly visible elements
     }, 10);
 }
 
