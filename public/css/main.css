@@ -564,10 +564,14 @@ input:-webkit-autofill:active {
 .main-view.active {
     display: block;
 }
-/* --- Dashboard View Styles --- */
+/* --- Dashboard View Styles (Digital ID Card Redesign) --- */
 #view-dashboard {
     padding: 1.5rem;
     overflow-y: auto;
+    /* Ensure glassmorphism is consistently applied */
+    background-color: var(--component-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
 }
 
 .dashboard-header {
@@ -575,14 +579,14 @@ input:-webkit-autofill:active {
 }
 
 #dashboard-greeting {
-    font-size: 1.75rem;
-    font-weight: 600;
+    font-size: 2rem; /* Increased size */
+    font-weight: 700; /* Bolder */
     margin: 0;
     color: var(--text-primary);
 }
 
 .address-card {
-    background-color: var(--component-bg);
+    background-color: var(--component-bg); /* Layered glass effect */
     border-radius: 16px;
     border: 1px solid var(--border-color);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
@@ -593,10 +597,13 @@ input:-webkit-autofill:active {
     width: 100%;
     height: 180px;
     background-color: #333; /* Placeholder color */
+    border-bottom: 1px solid var(--border-color); /* Separator */
+    background-size: cover;
+    background-position: center;
 }
 
 .card-content {
-    padding: 1.5rem;
+    padding: 1.75rem; /* Increased padding */
 }
 
 .card-address-details {
@@ -604,28 +611,59 @@ input:-webkit-autofill:active {
     margin-bottom: 2rem;
 }
 
+/* New "Pill" style for the 6D Code */
 #dashboard-6d-code {
     display: inline-block;
-    font-size: 1.75rem;
-    margin-bottom: 0.75rem;
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    padding: 8px 20px;
+    font-size: 1.6rem;
+    font-weight: bold;
+    font-family: 'Courier New', Courier, monospace;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    letter-spacing: 1.5px;
 }
 
+/* Container for the new address structure */
 #dashboard-full-address {
-    font-size: 1.1rem;
-    color: var(--text-primary);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
     margin: 0.25rem 0;
 }
+
+/* Visual hierarchy for the address parts */
+.address-district {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.address-city {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+}
+
+.address-region {
+    font-size: 1.0rem;
+    color: var(--text-secondary);
+}
+
 
 #dashboard-registered-to {
     font-size: 0.9rem;
     color: var(--text-secondary);
-    margin-top: 1rem;
+    margin-top: 1.5rem;
 }
 
 .card-actions {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    margin-top: 1.5rem;
 }
 
 .update-info {

@@ -529,7 +529,7 @@ function transitionToLoggedInState(userData) {
     appState.isLoggedIn = true;
     appState.user = userData;
 
-    // --- Step 2: Populate all NON-MAP elements immediately ---
+    // --- Step 2: Populate all NON-MAP elements immediately (with new design) ---
     const dashboardGreeting = document.getElementById('dashboard-greeting');
     const dashboard6dCode = document.getElementById('dashboard-6d-code');
     const dashboardFullAddress = document.getElementById('dashboard-full-address');
@@ -537,17 +537,32 @@ function transitionToLoggedInState(userData) {
     const dashboardUpdateBtn = document.getElementById('dashboard-update-btn');
     const dashboardUpdateInfo = document.getElementById('dashboard-update-info');
 
-    if (dashboardGreeting) dashboardGreeting.textContent = `Welcome back, ${userData.full_name}!`;
-    if (dashboard6dCode) dashboard6dCode.textContent = userData.six_d_code;
+    // Apply primary style to the update button
+    if (dashboardUpdateBtn) dashboardUpdateBtn.classList.add('btn-primary');
+
+    if (dashboardGreeting) dashboardGreeting.textContent = `Welcome back!`; // Simplified greeting
+    
+    // New 6D Code rendering
+    if (dashboard6dCode && userData.six_d_code) {
+        const codeParts = userData.six_d_code.split('-');
+        dashboard6dCode.innerHTML = `
+            <span class="code-part-red">${codeParts[0] || ''}</span>-<span class="code-part-green">${codeParts[1] || ''}</span>-<span class="code-part-blue">${codeParts[2] || ''}</span>
+        `;
+    }
+
+    // New address hierarchy rendering
     if (dashboardFullAddress) {
-        const addressParts = [userData.neighborhood, userData.district, userData.city, userData.region].filter(Boolean);
-        dashboardFullAddress.textContent = addressParts.join(', ');
+        dashboardFullAddress.innerHTML = `
+            <p class="address-district">${userData.district || ''}</p>
+            <p class="address-city">${userData.city || ''}</p>
+            <p class="address-region">${(userData.region || '') + (userData.locality_suffix ? ', ' + userData.locality_suffix : '')}</p>
+        `;
     }
+
     if (dashboardRegisteredTo) {
-        const registeredDate = new Date(userData.registered_at).toLocaleDateString();
-        dashboardRegisteredTo.textContent = `Registered to: ${userData.full_name} (Since: ${registeredDate})`;
+        dashboardRegisteredTo.textContent = `Registered to: ${userData.full_name}`;
     }
-    console.log("Step 2: Dashboard text populated successfully.");
+    console.log("Step 2: Dashboard text populated successfully with new design.");
 
     // --- Step 3: Wait for the map to be fully idle before performing map operations ---
     google.maps.event.addListenerOnce(map, 'idle', () => {
