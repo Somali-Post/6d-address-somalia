@@ -125,27 +125,33 @@
 
         <!-- View 2: The Dashboard (This is the new, empty container) -->
         <div id="view-dashboard" class="main-view">
-            <div class="dashboard-header">
-                <h2 id="dashboard-greeting" data-i18n-key="dashboard_greeting">Welcome back!</h2>
+<div class="dashboard-header">
+    <h2 id="dashboard-greeting" data-i18n-key="dashboard_greeting">Welcome back!</h2>
+</div>
+<div class="address-card">
+    <div id="dashboard-map" class="mini-map"></div>
+    <div class="card-content">
+        <div class="card-address-details">
+            <!-- The colored 6D code will be injected here by JS -->
+            <div id="dashboard-6d-code" class="code-pill"></div>
+            
+            <!-- The new, structured address plaque -->
+            <div class="address-plaque">
+                <p id="plaque-name" class="address-line"></p>
+                <p id="plaque-neighborhood" class="address-line"></p>
+                <p id="plaque-district-region" class="address-line"></p>
+                <p id="plaque-city-country" class="address-line"></p>
             </div>
-            <div class="address-card">
-                <div id="dashboard-map" class="mini-map">
-                    <!-- The static mini-map will be rendered here -->
-                </div>
-                <div class="card-content">
-                    <div class="card-address-details">
-                        <!-- The new address plaque will be rendered here by main.js -->
-                    </div>
-                    <div class="card-actions">
-                        <button id="dashboard-update-btn" class="btn" data-i18n-key="update_my_address">Update My Address</button>
-                        <button id="dashboard-share-btn" class="btn btn-secondary" data-i18n-key="share_my_address">Share My Address</button>
-                        <button id="logout-btn" class="btn btn-secondary btn-danger" data-i18n-key="nav_logout">Logout</button>
-                    </div>
-                    <div id="dashboard-update-info" class="update-info hidden">
-                        <!-- This will show the 30-day limit message -->
-                    </div>
-                </div>
-            </div>
+            <p id="dashboard-registered-to"></p>
+        </div>
+        <div class="card-actions">
+            <button id="dashboard-update-btn" class="btn btn-primary" data-i18n-key="update_my_address">Update My Address</button>
+            <button id="dashboard-share-btn" class="btn btn-secondary" data-i18n-key="share_my_address">Share My Address</button>
+            <button id="logout-btn" class="btn btn-secondary btn-danger" data-i18n-key="nav_logout">Logout</button>
+        </div>
+        <div id="dashboard-update-info" class="update-info hidden"></div>
+    </div>
+</div>
         </div>
 
         <!-- View 3: The Settings (This is the new, empty container) -->
