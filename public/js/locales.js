@@ -12,7 +12,15 @@ export const locales = {
     "settings_title": "Dejinta",
     "settings_preferences": "Dookhyada App-ka",
     "settings_language": "Luuqadda",
-    // Add all other text strings here...
+    "theme_light_mode": "Habka Iftiinka",
+    "login_title": "Gal Akoonkaaga",
+    "login_prompt": "Geli lambarkaaga taleefanka si aad u hesho koodka xaqiijinta.",
+    "login_button": "Dir Koodka Xaqiijinta",
+    "otp_title": "Geli Koodka Xaqiijinta",
+    "otp_prompt": "Waxaan kuu soo dirnay kood 6-lambar ah",
+    "otp_button": "Xaqiiji & Sii wad",
+    "otp_resend": "Dib u Dir Koodka",
+    // Add other strings as needed
   },
   // English (en)
   en: {
@@ -27,7 +35,15 @@ export const locales = {
     "settings_title": "Settings",
     "settings_preferences": "Application Preferences",
     "settings_language": "Language",
-    // Add all other text strings here...
+    "theme_light_mode": "Light Mode",
+    "login_title": "Login to Your Account",
+    "login_prompt": "Enter your phone number to receive a verification code.",
+    "login_button": "Send Verification Code",
+    "otp_title": "Enter Verification Code",
+    "otp_prompt": "We've sent a 6-digit code to",
+    "otp_button": "Verify & Proceed",
+    "otp_resend": "Resend Code",
+    // Add other strings as needed
   },
   // Arabic (ar)
   ar: {
@@ -42,6 +58,14 @@ export const locales = {
     "settings_title": "الإعدادات",
     "settings_preferences": "تفضيلات التطبيق",
     "settings_language": "اللغة",
-    // Add all other text strings here...
+    "theme_light_mode": "الوضع الفاتح",
+    "login_title": "تسجيل الدخول إلى حسابك",
+    "login_prompt": "أدخل رقم هاتفك لاستلام رمز التحقق.",
+    "login_button": "إرسال رمز التحقق",
+    "otp_title": "أدخل رمز التحقق",
+    "otp_prompt": "لقد أرسلنا رمزًا مكونًا من 6 أرقام إلى",
+    "otp_button": "تحقق وتابع",
+    "otp_resend": "إعادة إرسال الرمز",
+    // Add other strings as needed
   }
 };

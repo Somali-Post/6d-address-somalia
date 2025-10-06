@@ -133,6 +133,7 @@ function applyTranslations() {
 
     // Handle language direction for Arabic
     document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = language;
 }
 
 /**

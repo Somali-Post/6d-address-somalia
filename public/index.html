@@ -186,7 +186,7 @@
 
                     <!-- ADD THIS NEW BLOCK -->
                     <div class="form-group theme-toggle-group">
-                        <label for="theme-toggle">Light Mode</label>
+                        <label for="theme-toggle" data-i18n-key="theme_light_mode">Light Mode</label>
                         <label class="switch">
                             <input type="checkbox" id="theme-toggle">
                             <span class="slider"></span>
@@ -244,7 +244,7 @@
     <div id="bottom-sheet-overlay" class="hidden"></div>
     <div id="bottom-sheet-modal" class="hidden">
         <div class="sheet-header">
-        <h4>Register This Address</h4>
+        <h4 data-i18n-key="info_register_this_address">Register This Address</h4>
         <button id="close-sheet-btn" title="Close">&times;</button>
     </div>
     <div class="sheet-content">
@@ -297,20 +297,20 @@
     <div id="otp-modal-overlay" class="hidden"></div>
     <div id="otp-modal" class="hidden">
         <div class="modal-header">
-            <h4>Enter Verification Code</h4>
+            <h4 data-i18n-key="otp_title">Enter Verification Code</h4>
             <button id="close-otp-modal-btn" class="close-btn" title="Close">&times;</button>
         </div>
         <div class="modal-content">
-            <p>We've sent a 6-digit code to <strong id="otp-phone-display"></strong>.</p>
+            <p data-i18n-key="otp_prompt">We've sent a 6-digit code to <strong id="otp-phone-display"></strong>.</p>
             <form id="otp-form">
                 <input type="text" id="otp-input" maxlength="6" pattern="\d{6}" required autocomplete="one-time-code" inputmode="numeric">
-                <button type="submit" class="btn btn-primary">Verify & Proceed</button>
+                <button type="submit" class="btn btn-primary" data-i18n-key="otp_button">Verify & Proceed</button>
             </form>
             <div id="otp-error" class="error-message hidden"></div>
 
 <!-- ADD THIS NEW BLOCK -->
 <div class="resend-container">
-    <button id="resend-otp-btn" disabled>Resend Code</button>
+    <button id="resend-otp-btn" data-i18n-key="otp_resend" disabled>Resend Code</button>
     <span id="resend-timer"></span>
 </div>
         </div>
@@ -320,17 +320,17 @@
     <div id="login-modal-overlay" class="hidden"></div>
     <div id="login-modal" class="hidden">
         <div class="modal-header">
-    <h4>Login to Your Account</h4>
+    <h4 data-i18n-key="login_title">Login to Your Account</h4>
     <button id="close-login-modal-btn" class="close-btn" title="Close">&times;</button>
 </div>
         <div class="modal-content">
-            <p>Enter your phone number to receive a verification code.</p>
+            <p data-i18n-key="login_prompt">Enter your phone number to receive a verification code.</p>
             <form id="login-form">
                 <div class="phone-input-wrapper">
                     <span>+252</span>
                     <input type="tel" id="login-phone" required pattern="^[6-9]\d{8}$">
                 </div>
-                <button type="submit" class="btn btn-primary">Send Verification Code</button>
+                <button type="submit" class="btn btn-primary" data-i18n-key="login_button">Send Verification Code</button>
             </form>
             <div id="login-error" class="error-message hidden"></div>
 
