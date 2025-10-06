@@ -244,21 +244,21 @@
     <div id="bottom-sheet-overlay" class="hidden"></div>
     <div id="bottom-sheet-modal" class="hidden">
         <div class="sheet-header">
-        <h4 data-i18n-key="info_register_this_address">Register This Address</h4>
+        <h4 data-i18n-key="reg_title">Register This Address</h4>
         <button id="close-sheet-btn" title="Close">&times;</button>
     </div>
     <div class="sheet-content">
         <div class="form-group static-display">
-            <label>6D Address Code</label>
+            <label data-i18n-key="reg_code_label">6D Address Code</label>
             <div id="reg-6d-code-display" class="code-display"></div>
         </div>
         <form id="registration-form">
             <div class="form-group">
-                <label for="reg-name">Full Name</label>
+                <label for="reg-name" data-i18n-key="reg_name_label">Full Name</label>
                 <input type="text" id="reg-name" required minlength="3">
             </div>
             <div class="form-group">
-                <label for="reg-phone">Phone Number</label>
+                <label for="reg-phone" data-i18n-key="reg_phone_label">Phone Number</label>
                 <div class="phone-input-wrapper">
                     <span>+252</span>
                     <input type="tel" id="reg-phone" required pattern="^[6-9]\d{8}$">
@@ -266,26 +266,26 @@
             </div>
             <hr class="form-divider">
             <div class="form-group">
-                <label for="reg-region">Region</label>
+                <label for="reg-region" data-i18n-key="reg_region_label">Region</label>
                 <select id="reg-region" disabled></select> <!-- Disabled by default -->
             </div>
             <div class="form-group">
-                <label for="reg-city">City</label>
+                <label for="reg-city" data-i18n-key="reg_city_label">City</label>
                 <select id="reg-city" required></select>
             </div>
             <div class="form-group">
-                <label for="reg-district">District</label>
+                <label for="reg-district" data-i18n-key="reg_district_label">District</label>
                 <select id="reg-district" required></select>
             </div>
             <div class="form-group">
-                <label for="reg-neighborhood">Neighborhood</label>
+                <label for="reg-neighborhood" data-i18n-key="reg_neighborhood_label">Neighborhood</label>
                 <select id="reg-neighborhood"></select>
             </div>
             <div id="reg-neighborhood-manual-wrapper" class="form-group hidden">
-                <label for="reg-neighborhood-manual">Enter Neighborhood Name</label>
+                <label for="reg-neighborhood-manual" data-i18n-key="reg_neighborhood_manual_label">Enter Neighborhood Name</label>
                 <input type="text" id="reg-neighborhood-manual">
             </div>
-            <button type="submit" class="btn btn-primary">Verify Phone Number</button>
+            <button type="submit" class="btn btn-primary" data-i18n-key="reg_button">Verify Phone Number</button>
         </form>
     </div>
 </div>

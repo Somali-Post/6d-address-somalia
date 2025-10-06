@@ -206,7 +206,7 @@ function addEventListeners() {
         startResendTimer(); // Restart the timer on success
     } catch (error) {
         console.error("Error resending OTP:", error);
-        DOM.otpError.textContent = "Failed to resend code. Please try again shortly.";
+        DOM.otpError.textContent = t('error_resend_otp');
         DOM.otpError.classList.remove('hidden');
     }
 });
@@ -233,7 +233,7 @@ function addEventListeners() {
             // --- PERMISSION CHECK ---
             const isProtectedView = (viewName === 'dashboard' || viewName === 'history');
             if (isProtectedView && !appState.isLoggedIn) {
-                showToast("Please log in to access your dashboard.");
+                showToast("toast_please_login");
                 return; // Stop the navigation
             }
             // --- END OF CHECK ---
@@ -249,7 +249,7 @@ function addEventListeners() {
 
     // Connect the real logout button
     DOM.logoutBtn.addEventListener('click', () => {
-        if (confirm('Are you sure you want to log out?')) {
+        if (confirm(t('confirm_logout'))) {
             logout({ shouldReload: true });
         }
     });
@@ -280,7 +280,7 @@ function handleRegisterNowClick(e) {
 async function renderHistory() {
     if (!appState.isLoggedIn) return;
 
-    DOM.historyContent.innerHTML = `<p class="loading-message">Loading history...</p>`;
+    DOM.historyContent.innerHTML = `<p class="loading-message">${t('history_loading')}</p>`;
 
     try {
         const response = await fetch(`${API_BASE_URL}/api/users/me/history`, {
@@ -291,7 +291,7 @@ async function renderHistory() {
         const history = await response.json();
 
         if (history.length === 0) {
-            DOM.historyContent.innerHTML = `<p class="loading-message">You have no previous address history.</p>`;
+            DOM.historyContent.innerHTML = `<p class="loading-message">${t('history_empty')}</p>`;
             return;
         }
 
@@ -307,7 +307,7 @@ async function renderHistory() {
             itemEl.innerHTML = `
                 <div class="history-item-header">
                     <span class="history-item-code">${item.six_d_code}</span>
-                    <span class="history-item-dates">Used: ${registeredDate} - ${archivedDate}</span>
+                    <span class="history-item-dates">${t('history_used')}: ${registeredDate} - ${archivedDate}</span>
                 </div>
                 <p class="history-item-address">${addressParts}</p>
             `;
@@ -316,7 +316,7 @@ async function renderHistory() {
 
     } catch (error) {
         console.error("Failed to render history:", error);
-        DOM.historyContent.innerHTML = `<p class="loading-message">Could not load address history.</p>`;
+        DOM.historyContent.innerHTML = `<p class="loading-message">${t('history_error')}</p>`;
     }
 }
 
@@ -327,7 +327,7 @@ async function handleProfileUpdate(event) {
     event.preventDefault();
     const newFullName = DOM.profileNameInput.value.trim();
     if (newFullName === appState.user.full_name) {
-        showToast("No changes to save.");
+        showToast("toast_no_changes");
         return;
     }
 
@@ -348,20 +348,29 @@ async function handleProfileUpdate(event) {
         // Update the local state with the new name
         appState.user.full_name = result.updatedUser.full_name;
         
-        showToast("Profile updated successfully!");
+        showToast("toast_profile_updated");
 
     } catch (error) {
         console.error("Profile update failed:", error);
-        showToast("Error: Could not update profile.");
+        showToast("toast_profile_update_error");
     }
 }
 
 /**
- * Displays a short-lived toast notification message.
- * @param {string} message The message to display.
+ * A simple translation function (t-function).
+ * @param {string} key The i18n key.
+ * @returns {string} The translated string or the key itself if not found.
  */
-function showToast(message) {
-    DOM.toast.textContent = message;
+function t(key) {
+    return locales[appState.currentLanguage]?.[key] || key;
+}
+
+/**
+ * Displays a short-lived toast notification message.
+ * @param {string} key The i18n key for the message to display.
+ */
+function showToast(key) {
+    DOM.toast.textContent = t(key);
     DOM.toast.classList.add('show');
     setTimeout(() => {
         DOM.toast.classList.remove('show');
@@ -386,7 +395,7 @@ function handleAuthClick(e) {
     e.preventDefault();
     if (appState.isLoggedIn) {
         // User is logged in, so this is a logout button
-        if (confirm('Are you sure you want to log out?')) {
+        if (confirm(t('confirm_logout'))) {
             logout({ shouldReload: true });
         }
     } else {
@@ -400,11 +409,11 @@ function handleAuthClick(e) {
  */
 function updateAuthLink() {
     if (appState.isLoggedIn) {
-        DOM.authLinkText.textContent = 'Logout';
+        DOM.authLinkText.textContent = t('nav_logout');
         // Optional: Change the icon to a "logout" icon
         DOM.authLink.querySelector('svg').innerHTML = '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>';
     } else {
-        DOM.authLinkText.textContent = 'Login';
+        DOM.authLinkText.textContent = t('nav_login');
         // Optional: Change the icon back to a "login" icon
         DOM.authLink.querySelector('svg').innerHTML = '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>';
     }
@@ -422,6 +431,7 @@ function toggleLoginModal(show = false) {
     if (show) {
         DOM.loginError.classList.add('hidden');
         document.getElementById('login-phone').value = '';
+        applyTranslations(); // Re-apply translations to the newly visible elements
     }
 }
 
@@ -435,13 +445,13 @@ async function handleLoginSubmit(event) {
     const phoneNumber = document.getElementById('login-phone').value;
 
     if (!/^[6-9]\d{8}$/.test(phoneNumber)) {
-        DOM.loginError.textContent = "Invalid phone number format.";
+        DOM.loginError.textContent = t('error_invalid_phone');
         DOM.loginError.classList.remove('hidden');
         return;
     }
     
     submitButton.disabled = true;
-    submitButton.textContent = 'Sending Code...';
+    submitButton.textContent = t('sending_code');
     DOM.loginError.classList.add('hidden');
 
     try {
@@ -453,11 +463,11 @@ async function handleLoginSubmit(event) {
         toggleOtpModal(true, fullPhoneNumber); // Open the OTP modal
     } catch (error) {
         console.error("Error sending OTP for login:", error);
-        DOM.loginError.textContent = "Failed to send code. Please try again.";
+        DOM.loginError.textContent = t('error_send_code');
         DOM.loginError.classList.remove('hidden');
     } finally {
         submitButton.disabled = false;
-        submitButton.textContent = 'Send Verification Code';
+        submitButton.textContent = t('login_button');
     }
 }
 
@@ -466,9 +476,9 @@ async function handleLoginSubmit(event) {
  */
 function updateInitialInfoPanel() {
     if (appState.isLoggedIn) {
-        DOM.findMyLocationBtn.textContent = "Show My Registered Address";
+        DOM.findMyLocationBtn.textContent = t('info_show_my_address');
     } else {
-        DOM.findMyLocationBtn.textContent = "Find My 6D Address";
+        DOM.findMyLocationBtn.textContent = t('info_find_my_address');
     }
 }
 
@@ -515,7 +525,7 @@ async function checkSession() {
     } catch (error) {
         console.error("Session check failed:", error);
         if (error.name === 'AbortError') {
-            alert("The server is taking too long to respond. Please try refreshing the page.");
+            alert(t('error_server_timeout'));
         }
         logout();
     }
@@ -541,7 +551,7 @@ function transitionToLoggedInState(userData) {
     // Apply primary style to the update button
     if (dashboardUpdateBtn) dashboardUpdateBtn.classList.add('btn-primary');
 
-    if (dashboardGreeting) dashboardGreeting.textContent = `Welcome back!`; // Simplified greeting
+    if (dashboardGreeting) dashboardGreeting.textContent = `${t('dashboard_welcome')}!`; // Simplified greeting
     
     // New 6D Code rendering
     if (dashboard6dCode && userData.six_d_code) {
@@ -561,7 +571,7 @@ function transitionToLoggedInState(userData) {
     }
 
     if (dashboardRegisteredTo) {
-        dashboardRegisteredTo.textContent = `Registered to: ${userData.full_name}`;
+        dashboardRegisteredTo.textContent = `${t('dashboard_registered_to')}: ${userData.full_name}`;
     }
     console.log("Step 2: Dashboard text populated successfully with new design.");
 
@@ -642,7 +652,7 @@ function handleUpdateAddressClick() {
     appState.isUpdateMode = true;
     
     // Update the info panel's initial button text for the new context
-    DOM.findMyLocationBtn.textContent = "Cancel Update";
+    DOM.findMyLocationBtn.textContent = t('cancel_update');
     
     // Navigate to the map view
     navigateToView('map');
@@ -674,6 +684,7 @@ function toggleOtpModal(show = false, phoneNumber = '') {
         DOM.otpError.classList.add('hidden');
         document.getElementById('otp-input').value = '';
         startResendTimer(); // START THE TIMER
+        applyTranslations(); // Re-apply translations to the newly visible elements
     }
 }
 
@@ -701,6 +712,7 @@ function openRegistrationSheet() {
     setTimeout(() => {
         DOM.bottomSheetOverlay.classList.add('is-open');
         DOM.bottomSheetModal.classList.add('is-open');
+        applyTranslations(); // Re-apply translations to the newly visible elements
     }, 10);
 }
 
@@ -729,7 +741,7 @@ function handleFindMyLocation() {
         });
     } else {
         // --- LOGGED-OUT USER: "Find My 6D Address" (GPS) ---
-        if (!navigator.geolocation) return alert("Geolocation is not supported.");
+        if (!navigator.geolocation) return alert(t('error_geolocation_unsupported'))
         
         switchInfoPanelView('loading');
         navigator.geolocation.getCurrentPosition(
@@ -739,7 +751,7 @@ function handleFindMyLocation() {
                 animateToLocation(map, latLng, (finalLatLng) => processLocation(finalLatLng, accuracy));
             },
             () => {
-                alert("Unable to retrieve your location.");
+                alert(t('error_geolocation_failed'));
                 switchInfoPanelView('initial');
             }
         );
@@ -759,7 +771,7 @@ async function processLocation(latLng, accuracy = null) {
         switchInfoPanelView('address');
     } catch (error) {
         console.error("Geocoding failed:", error);
-        updateInfoPanel({ sixDCode, district: "Could not find address", region: "", localitySuffix }, accuracy);
+        updateInfoPanel({ sixDCode, district: t('error_geocoding'), region: "", localitySuffix }, accuracy);
         switchInfoPanelView('address');
     }
 }
@@ -801,7 +813,7 @@ function updateInfoPanel(data, accuracy) {
         const distance = calculateDistance(homePosition, selectedPosition);
         
         if (DOM.gpsAccuracyDisplay) { // Reuse the accuracy display for distance
-            DOM.gpsAccuracyDisplay.textContent = `Distance from your address: ${distance}`;
+            DOM.gpsAccuracyDisplay.textContent = `${t('distance_from_home')}: ${distance}`;
             DOM.gpsAccuracyDisplay.classList.remove('hidden');
         }
 
@@ -810,7 +822,7 @@ function updateInfoPanel(data, accuracy) {
         DOM.registerThisAddressBtn.classList.remove('hidden'); // Show the register button
         
         if (accuracy) {
-            DOM.gpsAccuracyDisplay.textContent = `Location accuracy: ±${Math.round(accuracy)}m`;
+            DOM.gpsAccuracyDisplay.textContent = `${t('location_accuracy')}: ±${Math.round(accuracy)}m`;
             DOM.gpsAccuracyDisplay.classList.remove('hidden');
         } else {
             DOM.gpsAccuracyDisplay.classList.add('hidden');
@@ -821,13 +833,13 @@ function updateInfoPanel(data, accuracy) {
 function handleCopyAddress() {
     if (!currentAddress) return;
     const addressString = `${currentAddress.sixDCode}\n${currentAddress.district}, ${currentAddress.region} ${currentAddress.localitySuffix}`;
-    navigator.clipboard.writeText(addressString).then(() => alert("Address copied!"));
+    navigator.clipboard.writeText(addressString).then(() => showToast("toast_address_copied"));
 }
 
 function handleShareAddress() {
     if (!currentAddress || !navigator.share) return;
     const addressString = `${currentAddress.sixDCode}, ${currentAddress.district}, ${currentAddress.region} ${currentAddress.localitySuffix}`;
-    navigator.share({ title: '6D Address', text: `My 6D Address is: ${addressString}`, url: window.location.href });
+    navigator.share({ title: '6D Address', text: `${t('share_text')}: ${addressString}`, url: window.location.href });
 }
 
 function handleRecenterMap() {
@@ -861,9 +873,9 @@ function parseAddressComponents(geocodeComponents, placeResult) {
     if (placeResult && placeResult.name && !placeResult.types.includes('route')) {
         district = placeResult.name;
     } else {
-        district = getComponent('sublocality_level_1') || getComponent('locality') || getComponent('administrative_area_level_2') || 'Unknown District';
+        district = getComponent('sublocality_level_1') || getComponent('locality') || getComponent('administrative_area_level_2') || t('unknown_district');
     }
-    const region = getComponent('administrative_area_level_1') || 'Unknown Region';
+    const region = getComponent('administrative_area_level_1') || t('unknown_region');
     const city = getComponent('locality') || getComponent('administrative_area_level_2') || region;
     return { district, region, city };
 }
@@ -887,7 +899,7 @@ async function handlePrimaryInfoPanelAction() {
 
     if (appState.isUpdateMode) {
         // --- UPDATE FLOW ---
-        if (confirm(`Are you sure you want to set this as your new official address?\n\n${currentAddress.sixDCode}\n${currentAddress.district}, ${currentAddress.region}`)) {
+        if (confirm(`${t('confirm_update_address_1')}\n\n${currentAddress.sixDCode}\n${currentAddress.district}, ${currentAddress.region}`)) {
             try {
                 const response = await fetch(`${API_BASE_URL}/api/users/me/address`, {
                     method: 'PUT',
@@ -900,13 +912,13 @@ async function handlePrimaryInfoPanelAction() {
 
                 if (!response.ok) throw new Error('Failed to update address.');
 
-                alert("Address updated successfully! The page will now reload.");
+                showToast("toast_address_updated");
                 appState.isUpdateMode = false; // Exit update mode
-                window.location.reload(); // Reload the page to reflect the new address
+                setTimeout(() => window.location.reload(), 2000); // Reload the page to reflect the new address
 
             } catch (error) {
                 console.error("Address update failed:", error);
-                alert("There was an error updating your address. Please try again.");
+                alert(t('error_address_update'));
             }
         }
     } else {
@@ -938,7 +950,7 @@ function findKeyByAlias(obj, valueToMatch) {
 }
 
 function populateRegions(selectedValue) {
-    DOM.regRegion.innerHTML = '<option value="">Select Region</option>';
+    DOM.regRegion.innerHTML = `<option value="">${t('select_region')}</option>`;
     const matchedKey = findKeyByAlias(somaliAdministrativeHierarchy, selectedValue);
     Object.keys(somaliAdministrativeHierarchy).forEach(key => {
         const region = somaliAdministrativeHierarchy[key];
@@ -949,7 +961,7 @@ function populateRegions(selectedValue) {
 }
 
 function populateCities(regionKey, selectedValue) {
-    DOM.regCity.innerHTML = '<option value="">Select City</option>';
+    DOM.regCity.innerHTML = `<option value="">${t('select_city')}</option>`;
     if (!regionKey) return '';
     const cities = somaliAdministrativeHierarchy[regionKey]?.cities || {};
     const matchedKey = findKeyByAlias(cities, selectedValue);
@@ -962,7 +974,7 @@ function populateCities(regionKey, selectedValue) {
 }
 
 function populateDistricts(regionKey, cityKey, selectedValue) {
-    DOM.regDistrict.innerHTML = '<option value="">Select District</option>';
+    DOM.regDistrict.innerHTML = `<option value="">${t('select_district')}</option>`;
     if (!regionKey || !cityKey) return '';
     const districts = somaliAdministrativeHierarchy[regionKey]?.cities?.[cityKey]?.districts || {};
     const matchedKey = findKeyByAlias(districts, selectedValue);
@@ -975,14 +987,14 @@ function populateDistricts(regionKey, cityKey, selectedValue) {
 }
 
 function populateNeighborhoods(regionKey, cityKey, districtKey) {
-    DOM.regNeighborhood.innerHTML = '<option value="">Select Neighborhood (Optional)</option>';
+    DOM.regNeighborhood.innerHTML = `<option value="">${t('select_neighborhood')}</option>`;
     if (!regionKey || !cityKey || !districtKey) {
-        DOM.regNeighborhood.add(new Option("Other...", "Other"));
+        DOM.regNeighborhood.add(new Option(t('other'), "Other"));
         return;
     };
     const neighborhoods = somaliAdministrativeHierarchy[regionKey]?.cities?.[cityKey]?.districts?.[districtKey]?.neighborhoods || [];
     neighborhoods.forEach(n => DOM.regNeighborhood.add(new Option(n, n)));
-    DOM.regNeighborhood.add(new Option("Other...", "Other"));
+    DOM.regNeighborhood.add(new Option(t('other'), "Other"));
 }
 
 async function handleRegistrationSubmit(event) {
@@ -990,7 +1002,7 @@ async function handleRegistrationSubmit(event) {
     const form = event.target;
     const submitButton = form.querySelector('button[type="submit"]');
     submitButton.disabled = true;
-    submitButton.textContent = 'Sending Code...';
+    submitButton.textContent = t('sending_code');
 
     const phoneNumber = `+252${document.getElementById('reg-phone').value}`;
 
@@ -1005,10 +1017,10 @@ async function handleRegistrationSubmit(event) {
 
     } catch (error) {
         console.error("Error sending OTP:", error);
-        alert("Failed to send verification code. Please check the phone number and try again.");
+        alert(t('error_send_code'));
     } finally {
         submitButton.disabled = false;
-        submitButton.textContent = 'Verify Phone Number';
+        submitButton.textContent = t('reg_button');
     }
 }
 
@@ -1019,13 +1031,13 @@ async function handleOtpSubmit(event) {
     const otpCode = document.getElementById('otp-input').value;
     
     if (!confirmationResult || !/^\d{6}$/.test(otpCode)) {
-        DOM.otpError.textContent = "Please enter a valid 6-digit code.";
+        DOM.otpError.textContent = t('error_invalid_otp');
         DOM.otpError.classList.remove('hidden');
         return;
     }
 
     submitButton.disabled = true;
-    submitButton.textContent = 'Verifying...';
+    submitButton.textContent = t('verifying');
     DOM.otpError.classList.add('hidden');
 
     try {
@@ -1075,16 +1087,17 @@ async function handleOtpSubmit(event) {
         console.log("Backend session token received.");
 
         toggleOtpModal(false);
+        showToast("toast_reg_success");
         // Transition to the dashboard using the complete user data returned from the auth endpoint.
         transitionToLoggedInState(authData.user);
 
     } catch (error) {
         console.error("Final authentication step failed:", error);
-        DOM.otpError.textContent = "Authentication failed. Please try again.";
+        DOM.otpError.textContent = t('error_auth_failed');
         DOM.otpError.classList.remove('hidden');
     } finally {
         submitButton.disabled = false;
-        submitButton.textContent = 'Verify & Proceed';
+        submitButton.textContent = t('otp_button');
     }
 }
 
