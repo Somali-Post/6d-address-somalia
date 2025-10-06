@@ -537,6 +537,10 @@ async function checkSession() {
  */
 function transitionToLoggedInState(userData) {
     console.log("Step 1: Entering transitionToLoggedInState. User data received:", userData);
+    
+    // --- IMMEDIATE ACTION: Switch to the dashboard view FIRST ---
+    navigateToView('dashboard');
+
     appState.isLoggedIn = true;
     appState.user = userData;
 
@@ -612,7 +616,6 @@ function transitionToLoggedInState(userData) {
         // ... (The 30-day update logic remains the same)
     }
 
-    navigateToView('dashboard');
     updateAuthLink();
     updateSettingsView();
     updateInitialInfoPanel();
