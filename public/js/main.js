@@ -551,7 +551,9 @@ function transitionToLoggedInState(userData) {
     // Apply primary style to the update button
     if (dashboardUpdateBtn) dashboardUpdateBtn.classList.add('btn-primary');
 
-    if (dashboardGreeting) dashboardGreeting.textContent = `${t('dashboard_welcome')}!`; // Simplified greeting
+    if (dashboardGreeting) {
+        dashboardGreeting.innerHTML = `${t('dashboard_welcome')}, <span class="user-name">${userData.full_name}</span>!`;
+    }
     
     // New 6D Code rendering
     if (dashboard6dCode && userData.six_d_code) {
@@ -561,17 +563,24 @@ function transitionToLoggedInState(userData) {
         `;
     }
 
-    // New address hierarchy rendering
+    // New address hierarchy rendering for the "plaque"
     if (dashboardFullAddress) {
+        const neighborhoodHTML = userData.neighborhood ? `<p class="address-line">${userData.neighborhood}</p>` : '';
         dashboardFullAddress.innerHTML = `
-            <p class="address-district">${userData.district || ''}</p>
-            <p class="address-city">${userData.city || ''}</p>
-            <p class="address-region">${(userData.region || '') + (userData.locality_suffix ? ', ' + userData.locality_suffix : '')}</p>
+            <div class="address-plaque">
+                <p class="address-line six-d-code">${userData.six_d_code}</p>
+                <p class="address-line user-name">${userData.full_name}</p>
+                ${neighborhoodHTML}
+                <p class="address-line">${userData.district}, ${userData.region}${userData.locality_suffix ? ' ' + userData.locality_suffix : ''}</p>
+                <p class="address-line">${userData.city}</p>
+                <p class="address-line">Somalia</p>
+            </div>
         `;
     }
 
+    // This element is now part of the plaque, so we can remove it or hide it.
     if (dashboardRegisteredTo) {
-        dashboardRegisteredTo.textContent = `${t('dashboard_registered_to')}: ${userData.full_name}`;
+        dashboardRegisteredTo.classList.add('hidden');
     }
     console.log("Step 2: Dashboard text populated successfully with new design.");
 

@@ -576,12 +576,18 @@ input:-webkit-autofill:active {
 
 .dashboard-header {
     margin-bottom: 1.5rem;
+    background-color: transparent; /* Remove the dark grey bar */
 }
 
 #dashboard-greeting {
-    font-size: 2rem; /* Increased size */
-    font-weight: 700; /* Bolder */
+    font-size: 1.8rem; /* Adjusted size */
+    font-weight: 600;
     margin: 0;
+    color: var(--text-secondary);
+}
+
+#dashboard-greeting .user-name {
+    font-weight: 700;
     color: var(--text-primary);
 }
 
@@ -611,52 +617,36 @@ input:-webkit-autofill:active {
     margin-bottom: 2rem;
 }
 
-/* New "Pill" style for the 6D Code */
-#dashboard-6d-code {
-    display: inline-block;
+/* --- Address Plaque Styles --- */
+.address-plaque {
     background-color: var(--background-color);
     border: 1px solid var(--border-color);
-    border-radius: 999px;
-    padding: 8px 20px;
-    font-size: 1.6rem;
-    font-weight: bold;
-    font-family: 'Courier New', Courier, monospace;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.4);
+}
+
+.address-line {
+    margin: 0 0 0.5rem 0;
+    line-height: 1.4;
     color: var(--text-secondary);
-    margin-bottom: 1.5rem;
+}
+
+.address-line.six-d-code {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: var(--text-primary);
     letter-spacing: 1.5px;
+    margin-bottom: 1rem;
 }
 
-/* Container for the new address structure */
-#dashboard-full-address {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    margin: 0.25rem 0;
-}
-
-/* Visual hierarchy for the address parts */
-.address-district {
-    font-size: 1.6rem;
+.address-line.user-name {
+    font-size: 1.2rem;
     font-weight: 600;
     color: var(--text-primary);
-    line-height: 1.2;
-}
-
-.address-city {
-    font-size: 1.2rem;
-    color: var(--text-secondary);
-}
-
-.address-region {
-    font-size: 1.0rem;
-    color: var(--text-secondary);
-}
-
-
-#dashboard-registered-to {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    margin-top: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .card-actions {
@@ -674,6 +664,24 @@ input:-webkit-autofill:active {
     margin-top: 1rem;
     background-color: rgba(0,0,0,0.2);
     border-radius: 8px;
+}
+
+/* --- Desktop Layout Adjustments --- */
+@media (min-width: 768px) {
+    .address-card {
+        max-width: 500px; /* Constrain the width on desktop */
+        margin: 0 auto; /* Center the card */
+    }
+
+    .card-actions {
+        flex-direction: row; /* Arrange buttons horizontally on desktop */
+        justify-content: space-between;
+    }
+
+    .card-actions .btn {
+        width: auto; /* Allow buttons to size to their content */
+        flex-grow: 1; /* Make buttons share the space */
+    }
 }
 
 
