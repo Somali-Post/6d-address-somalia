@@ -4,7 +4,7 @@ export const GOOGLE_MAPS_API_KEY = "__GOOGLE_MAPS_API_KEY__";
 // The base URL for our custom backend API
 const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 // For local development, use http://localhost:3001. For production, use a relative path.
-export const API_BASE_URL = isLocal ? 'http://localhost:3001' : '';
+export const API_BASE_URL = "https://d-address-somalia-api.onrender.com";
 
 // This is our authoritative source for UI dropdowns.
 export const somaliAdministrativeHierarchy = {
