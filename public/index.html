@@ -59,7 +59,7 @@
     <!-- NEW LOADER HTML -->
     <div id="loader-wrapper" class="loader-wrapper">
         <span class="loader"><span></span></span>
-        <div class="loader-text">
+        <div class="loader-text" data-i18n-key="loader_text">
             Loading 6D Somalia
             <span class="dots">
                 <span class="dot red">.</span>
@@ -90,7 +90,7 @@
                 <!-- Loading State -->
                 <div id="info-panel-loading" class="info-panel-view">
                     <div class="spinner-small"></div>
-                    <span>Locating...</span>
+                    <span data-i18n-key="locating">Locating...</span>
                 </div>
                 <!-- Address Display State -->
                 <div id="info-panel-address" class="info-panel-view">
@@ -101,13 +101,13 @@
                             <span class="code-part-red"></span>-<span class="code-part-green"></span>-<span class="code-part-blue"></span>
                         </div>
                         <div class="info-panel-actions">
-                            <button id="copy-btn" class="icon-btn" title="Copy Address">
+                            <button id="copy-btn" class="icon-btn" title="Copy Address" data-i18n-title-key="copy_address">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                             </button>
-                            <button id="share-btn" class="icon-btn" title="Share Address">
+                            <button id="share-btn" class="icon-btn" title="Share Address" data-i18n-title-key="share_address">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
                             </button>
-                            <button id="recenter-btn" class="icon-btn hidden" title="Recenter Map">
+                            <button id="recenter-btn" class="icon-btn hidden" title="Recenter Map" data-i18n-title-key="recenter_map">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
                             </button>
                         </div>
@@ -126,7 +126,7 @@
         <!-- View 2: The Dashboard (This is the new, empty container) -->
         <div id="view-dashboard" class="main-view">
             <div class="dashboard-header">
-                <h2 id="dashboard-greeting">Welcome back!</h2>
+                <h2 id="dashboard-greeting" data-i18n-key="dashboard_greeting">Welcome back!</h2>
             </div>
             <div class="address-card">
                 <div id="dashboard-map" class="mini-map">
@@ -135,12 +135,12 @@
                 <div class="card-content">
                     <div class="card-address-details">
                         <div id="dashboard-6d-code" class="code-display">-- -- --</div>
-                        <p id="dashboard-full-address">Loading address...</p>
-                        <p id="dashboard-registered-to">Registered to: Loading...</p>
+                        <p id="dashboard-full-address" data-i18n-key="loading_address">Loading address...</p>
+                        <p id="dashboard-registered-to" data-i18n-key="registered_to_loading">Registered to: Loading...</p>
                     </div>
                     <div class="card-actions">
-                        <button id="dashboard-update-btn" class="btn">Update My Address</button>
-                        <button id="dashboard-share-btn" class="btn btn-secondary">Share My Address</button>
+                        <button id="dashboard-update-btn" class="btn" data-i18n-key="update_my_address">Update My Address</button>
+                        <button id="dashboard-share-btn" class="btn btn-secondary" data-i18n-key="share_my_address">Share My Address</button>
                         <button id="logout-btn" class="btn btn-secondary btn-danger" data-i18n-key="nav_logout">Logout</button>
                     </div>
                     <div id="dashboard-update-info" class="update-info hidden">
@@ -158,17 +158,17 @@
             <div class="settings-content">
                 <!-- Section 1: Logged-In Users ONLY -->
                 <div id="settings-profile-management" class="settings-section hidden">
-                    <h2>Profile Management</h2>
+                    <h2 data-i18n-key="profile_management">Profile Management</h2>
                     <form id="profile-form">
                         <div class="form-group">
-                            <label for="profile-name">Full Name</label>
+                            <label for="profile-name" data-i18n-key="full_name">Full Name</label>
                             <input type="text" id="profile-name" required minlength="3">
                         </div>
                         <div class="form-group">
-                            <label>Phone Number</label>
+                            <label data-i18n-key="phone_number">Phone Number</label>
                             <input type="text" id="profile-phone" disabled>
                         </div>
-                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <button type="submit" class="btn btn-primary" data-i18n-key="save_changes">Save Changes</button>
                     </form>
                 </div>
 
@@ -196,9 +196,9 @@
 
                 <!-- Section 3: Logged-In Users ONLY -->
                 <div id="settings-danger-zone" class="settings-section hidden">
-                    <h2>Danger Zone</h2>
+                    <h2 data-i18n-key="danger_zone">Danger Zone</h2>
                     <!-- Delete Account button will go here -->
-                    <p>Permanently delete your account.</p>
+                    <p data-i18n-key="delete_account_prompt">Permanently delete your account.</p>
                 </div>
             </div>
         </div>
@@ -210,7 +210,7 @@
             </div>
             <div id="history-content" class="history-content">
                 <!-- History items will be dynamically inserted here -->
-                <p class="loading-message">Loading history...</p>
+                <p class="loading-message" data-i18n-key="history_loading">Loading history...</p>
             </div>
         </div>
     </main>
@@ -335,8 +335,8 @@
             <div id="login-error" class="error-message hidden"></div>
 
             <!-- ADD THIS NEW BLOCK -->
-            <div class="register-link-container">
-                Don't have an account? <a href="#" id="register-now-link">Register now</a>.
+            <div class="register-link-container" data-i18n-key="login_register_prompt">
+                Don't have an account? <a href="#" id="register-now-link" data-i18n-key="login_register_link">Register now</a>.
             </div>
         </div>
     </div>

@@ -741,7 +741,10 @@ function handleFindMyLocation() {
         });
     } else {
         // --- LOGGED-OUT USER: "Find My 6D Address" (GPS) ---
-        if (!navigator.geolocation) return alert(t('error_geolocation_unsupported'))
+        if (!navigator.geolocation) {
+            alert(t('error_geolocation_unsupported'));
+            return;
+        }
         
         switchInfoPanelView('loading');
         navigator.geolocation.getCurrentPosition(
