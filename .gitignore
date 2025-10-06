@@ -10,3 +10,6 @@ Thumbs.db
 
 # Node modules (in case you ever add a build tool)
 node_modules/
+
+public/js/firebase.js
+public/js/config.js

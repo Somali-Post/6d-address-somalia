@@ -1,23 +1,26 @@
-// This script runs on the Netlify server during the build process.
 const fs = require('fs');
 
+// --- File Paths ---
+const configTemplatePath = './public/js/config.template.js'; // Assuming you create a template for this too
 const configPath = './public/js/config.js';
-const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+const firebaseTemplatePath = './public/js/firebase.template.js';
+const firebasePath = './public/js/firebase.js';
 
-if (!apiKey) {
-  throw new Error("Google Maps API key not found in environment variables.");
-}
+// --- Create config.js from template ---
+let configContent = fs.readFileSync(configTemplatePath, 'utf8');
+configContent = configContent.replace('__GOOGLE_MAPS_API_KEY__', process.env.GOOGLE_MAPS_API_KEY);
+fs.writeFileSync(configPath, configContent);
+console.log('Successfully created js/config.js');
 
-// Read the config.js file
-let configFileContent = fs.readFileSync(configPath, 'utf8');
+// --- Create firebase.js from template ---
+let firebaseContent = fs.readFileSync(firebaseTemplatePath, 'utf8');
+firebaseContent = firebaseContent.replace('__FIREBASE_API_KEY__', process.env.FIREBASE_API_KEY);
+firebaseContent = firebaseContent.replace('__FIREBASE_AUTH_DOMAIN__', process.env.FIREBASE_AUTH_DOMAIN);
+firebaseContent = firebaseContent.replace('__FIREBASE_PROJECT_ID__', process.env.FIREBASE_PROJECT_ID);
+firebaseContent = firebaseContent.replace('__FIREBASE_STORAGE_BUCKET__', process.env.FIREBASE_STORAGE_BUCKET);
+firebaseContent = firebaseContent.replace('__FIREBASE_MESSAGING_SENDER_ID__', process.env.FIREBASE_MESSAGING_SENDER_ID);
+firebaseContent = firebaseContent.replace('__FIREBASE_APP_ID__', process.env.FIREBASE_APP_ID);
+firebaseContent = firebaseContent.replace('__FIREBASE_MEASUREMENT_ID__', process.env.FIREBASE_MEASUREMENT_ID);
 
-// Replace the placeholder with the actual API key
-configFileContent = configFileContent.replace(
-  'YOUR_GOOGLE_MAPS_API_KEY_HERE',
-  apiKey
-);
-
-// Write the updated content back to the file
-fs.writeFileSync(configPath, configFileContent);
-
-console.log('Successfully injected Google Maps API key.');
+fs.writeFileSync(firebasePath, firebaseContent);
+console.log('Successfully created js/firebase.js');

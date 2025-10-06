@@ -1,5 +1,5 @@
 // This file holds configuration data.
-export const GOOGLE_MAPS_API_KEY = "YOUR_GOOGLE_MAPS_API_KEY_HERE";
+export const GOOGLE_MAPS_API_KEY = "__GOOGLE_MAPS_API_KEY__";
 
 // The base URL for our custom backend API
 const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
