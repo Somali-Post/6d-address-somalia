@@ -10,7 +10,10 @@ const urlsToCache = [
   '/js/map-core.js',
   '/js/firebase.js',
   '/js/locales.js',
-  '/assets/logo-somalia.png'
+  '/js/json-sanitizer.js',
+  '/assets/webapp-logo.png',
+  '/assets/logo-somalia.png',
+  '/assets/logo-somalia-dark.png'
 ];
 
 // 1. Installation: Open a cache and add the app shell files to it.

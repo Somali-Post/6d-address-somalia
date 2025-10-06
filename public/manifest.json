@@ -4,14 +4,16 @@
   "description": "Your official digital address in Somalia.",
   "icons": [
     {
-      "src": "/assets/web-app-manifest-192x192.png",
+      "src": "/assets/webapp-logo.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
-      "src": "/assets/web-app-manifest-512x512.png",
+      "src": "/assets/webapp-logo.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
   "start_url": "/",
