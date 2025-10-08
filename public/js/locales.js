@@ -89,7 +89,8 @@ export const locales = {
     "login_register_link": "Isdiiwaangeli hadda",
     "toast_area_not_supported": "Adeeggu wuxuu ku kooban yahay gudaha Soomaaliya oo keliya.",
     "dashboard_hero_title": "Ku soo dhawow Boordkaaga 6D",
-    "dashboard_hero_subtitle": "Kani waa ciwaankaaga dhijitaalka ah ee rasmiga ah, oo u diiwaan gashan:"
+    "dashboard_hero_subtitle": "Kani waa ciwaankaaga dhijitaalka ah ee rasmiga ah, oo u diiwaan gashan:",
+    "update_available_on": "Cusboonaysiinta xigta waxay diyaar noqon doontaa {date}"
   },
   // English (en)
   en: {
@@ -181,7 +182,8 @@ export const locales = {
     "login_register_link": "Register now",
     "toast_area_not_supported": "Service is only available within Somalia.",
     "dashboard_hero_title": "Welcome to your 6D Dashboard",
-    "dashboard_hero_subtitle": "This is your official digital address, registered to:"
+    "dashboard_hero_subtitle": "This is your official digital address, registered to:",
+    "update_available_on": "Next update available on {date}"
   },
   // Arabic (ar)
   ar: {
@@ -273,6 +275,7 @@ export const locales = {
     "login_register_link": "سجل الآن",
     "toast_area_not_supported": "الخدمة متاحة فقط داخل الصومال.",
     "dashboard_hero_title": "مرحباً بك في لوحة تحكم 6D الخاصة بك",
-    "dashboard_hero_subtitle": "هذا هو عنوانك الرقمي الرسمي، مسجل لـ:"
+    "dashboard_hero_subtitle": "هذا هو عنوانك الرقمي الرسمي، مسجل لـ:",
+    "update_available_on": "التحديث القادم متاح في {date}"
   }
 };

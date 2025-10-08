@@ -77,6 +77,8 @@ const DOM = {
     historyContent: document.getElementById('history-content'),
     languageSelect: document.getElementById('language-select'),
     themeToggle: document.getElementById('theme-toggle'),
+    dashboardShareBtn: document.getElementById('dashboard-share-btn'),
+    dashboardUpdateInfo: document.getElementById('dashboard-update-info'),
 };
 
 // --- Helper Functions ---
@@ -246,6 +248,7 @@ function addEventListeners() {
 
     // --- Wire up the new Update Address button ---
     DOM.dashboardUpdateBtn.addEventListener('click', handleUpdateAddressClick);
+    DOM.dashboardShareBtn.addEventListener('click', handleDashboardShare);
 
     // Connect the real logout button
     DOM.logoutBtn.addEventListener('click', () => {
@@ -553,6 +556,32 @@ function transitionToLoggedInState(userData) {
     appState.isLoggedIn = true;
     appState.user = userData;
 
+    // --- START: 30-Day Update Lockout Logic ---
+    const registeredDate = new Date(userData.registered_at);
+    const nextUpdateDate = new Date(registeredDate);
+    nextUpdateDate.setDate(registeredDate.getDate() + 30);
+
+    const now = new Date();
+
+    if (now < nextUpdateDate) {
+        // User is LOCKED
+        const formattedDate = nextUpdateDate.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+        const lockMessage = t('update_available_on').replace('{date}', formattedDate);
+        
+        DOM.dashboardUpdateBtn.disabled = true;
+        DOM.dashboardUpdateBtn.textContent = lockMessage;
+        
+        DOM.dashboardUpdateInfo.textContent = lockMessage;
+        DOM.dashboardUpdateInfo.classList.remove('hidden');
+
+    } else {
+        // User is UNLOCKED
+        DOM.dashboardUpdateBtn.disabled = false;
+        DOM.dashboardUpdateBtn.textContent = t('update_my_address');
+        DOM.dashboardUpdateInfo.classList.add('hidden');
+    }
+    // --- END: 30-Day Update Lockout Logic ---
+
     // --- Step 2: Populate all NON-MAP elements immediately ---
     
     const dashboard6dCode = document.getElementById('dashboard-6d-code');
@@ -844,6 +873,23 @@ function handleShareAddress() {
     if (!currentAddress || !navigator.share) return;
     const addressString = `${currentAddress.sixDCode}, ${currentAddress.district}, ${currentAddress.region} ${currentAddress.localitySuffix}`;
     navigator.share({ title: '6D Address', text: `${t('share_text')}: ${addressString}`, url: window.location.href });
+}
+
+/**
+ * Handles sharing the user's registered address from the dashboard.
+ */
+function handleDashboardShare() {
+    if (!appState.isLoggedIn || !appState.user || !navigator.share) return;
+
+    const user = appState.user;
+    const addressParts = [user.neighborhood, user.district, user.city, user.region].filter(Boolean).join(', ');
+    const shareText = `${t('share_text')}: ${user.six_d_code}\n${addressParts}, Somalia`;
+
+    navigator.share({
+        title: 'My 6D Address',
+        text: shareText,
+        url: window.location.href
+    }).catch(err => console.error("Share failed:", err));
 }
 
 function handleRecenterMap() {
