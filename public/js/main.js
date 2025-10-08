@@ -516,11 +516,18 @@ async function checkSession() {
         }
 
         const responseData = await response.json();
-        if (!responseData.user) {
+        
+        // --- START OF FIX ---
+        // Defensively get the user object, whether it's nested or the root of the response.
+        const user = responseData.user || responseData; 
+
+        // Check for a valid user object.
+        if (!user || !user.id) {
             throw new Error('User data not found in server response.');
         }
-        console.log("User data fetched successfully:", responseData.user);
-        transitionToLoggedInState(responseData.user);
+        console.log("User data fetched successfully:", user);
+        transitionToLoggedInState(user);
+        // --- END OF FIX ---
 
     } catch (error) {
         console.error("Session check failed:", error);
