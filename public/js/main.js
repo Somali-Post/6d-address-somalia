@@ -1,7 +1,7 @@
 'use strict';
 console.log("Executing main.js version 2");
 
-import { GOOGLE_MAPS_API_KEY, somaliAdministrativeHierarchy, API_BASE_URL } from './config.js';
+import { GOOGLE_MAPS_API_KEY, somaliAdministrativeHierarchy, API_BASE_URL, SOMALIA_BOUNDS } from './config.js';
 import { loadGoogleMapsAPI } from './utils.js';
 import * as MapCore from './map-core.js';
 import { setupRecaptcha, sendOtp, verifyOtp } from './firebase.js'; // Import Firebase functions
@@ -730,7 +730,18 @@ function handleFindMyLocation() {
         switchInfoPanelView('loading');
         navigator.geolocation.getCurrentPosition(
             (position) => {
-                const latLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+
+                // --- START OF NEW CODE ---
+                if (lat < SOMALIA_BOUNDS.minLat || lat > SOMALIA_BOUNDS.maxLat || lng < SOMALIA_BOUNDS.minLng || lng > SOMALIA_BOUNDS.maxLng) {
+                    showToast('toast_area_not_supported');
+                    switchInfoPanelView('initial'); // Reset the UI
+                    return; // Stop processing
+                }
+                // --- END OF NEW CODE ---
+
+                const latLng = new google.maps.LatLng(lat, lng);
                 const accuracy = position.coords.accuracy;
                 animateToLocation(map, latLng, (finalLatLng) => processLocation(finalLatLng, accuracy));
             },
@@ -743,6 +754,13 @@ function handleFindMyLocation() {
 }
 
 async function processLocation(latLng, accuracy = null) {
+    const lat = latLng.lat();
+    const lng = latLng.lng();
+
+    if (lat < SOMALIA_BOUNDS.minLat || lat > SOMALIA_BOUNDS.maxLat || lng < SOMALIA_BOUNDS.minLng || lng > SOMALIA_BOUNDS.maxLng) {
+        showToast('toast_area_not_supported');
+        return; // Stop processing
+    }
     switchInfoPanelView('loading');
     DOM.recenterBtn.classList.add('hidden');
     const { sixDCode, localitySuffix } = MapCore.generate6DCode(latLng.lat(), latLng.lng());

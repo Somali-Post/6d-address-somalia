@@ -86,7 +86,8 @@ export const locales = {
     "danger_zone": "Aagga Khatarta",
     "delete_account_prompt": "Si joogto ah u tirtir akoonkaaga.",
     "login_register_prompt": "Akoon ma lihid?",
-    "login_register_link": "Isdiiwaangeli hadda"
+    "login_register_link": "Isdiiwaangeli hadda",
+    "toast_area_not_supported": "Adeeggu wuxuu ku kooban yahay gudaha Soomaaliya oo keliya."
   },
   // English (en)
   en: {
@@ -175,7 +176,8 @@ export const locales = {
     "danger_zone": "Danger Zone",
     "delete_account_prompt": "Permanently delete your account.",
     "login_register_prompt": "Don't have an account?",
-    "login_register_link": "Register now"
+    "login_register_link": "Register now",
+    "toast_area_not_supported": "Service is only available within Somalia."
   },
   // Arabic (ar)
   ar: {
@@ -264,6 +266,7 @@ export const locales = {
     "danger_zone": "منطقة الخطر",
     "delete_account_prompt": "احذف حسابك بشكل دائم.",
     "login_register_prompt": "ليس لديك حساب؟",
-    "login_register_link": "سجل الآن"
+    "login_register_link": "سجل الآن",
+    "toast_area_not_supported": "الخدمة متاحة فقط داخل الصومال."
   }
 };
