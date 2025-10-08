@@ -126,10 +126,11 @@
         <!-- View 2: The Dashboard (This is the new, empty container) -->
         <div id="view-dashboard" class="main-view">
 <div class="dashboard-header">
-    <h2 id="dashboard-greeting" data-i18n-key="dashboard_greeting">Welcome back!</h2>
+    <h2 class="hero-title" data-i18n-key="dashboard_hero_title">Welcome to your 6D Dashboard</h2>
+    <p class="hero-subtitle" data-i18n-key="dashboard_hero_subtitle">This is your official digital address, registered to:</p>
+    <p id="hero-user-name" class="hero-user-name"></p>
 </div>
 <div class="address-card">
-    <div id="dashboard-map" class="mini-map"></div>
     <div class="card-content">
         <div class="card-address-details">
             <!-- The colored 6D code will be injected here by JS -->
@@ -142,7 +143,6 @@
                 <p id="plaque-district-region" class="address-line"></p>
                 <p id="plaque-city-country" class="address-line"></p>
             </div>
-            <p id="dashboard-registered-to"></p>
         </div>
         <div class="card-actions">
             <button id="dashboard-update-btn" class="btn btn-primary" data-i18n-key="update_my_address">Update My Address</button>
@@ -346,8 +346,8 @@
     </div>
     <!-- END OF NEW ELEMENTS -->
 
-    <script src="./js/firebase.js?v=1.4" type="module"></script>
-    <script src="./js/main.js?v=1.4" type="module"></script>
+    <script src="./js/firebase.js?v=1.5" type="module"></script>
+    <script src="./js/main.js?v=1.5" type="module"></script>
 
     <!-- The Toast Notification Component -->
     <div id="toast-notification" class="toast"></div>

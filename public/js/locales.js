@@ -87,7 +87,9 @@ export const locales = {
     "delete_account_prompt": "Si joogto ah u tirtir akoonkaaga.",
     "login_register_prompt": "Akoon ma lihid?",
     "login_register_link": "Isdiiwaangeli hadda",
-    "toast_area_not_supported": "Adeeggu wuxuu ku kooban yahay gudaha Soomaaliya oo keliya."
+    "toast_area_not_supported": "Adeeggu wuxuu ku kooban yahay gudaha Soomaaliya oo keliya.",
+    "dashboard_hero_title": "Ku soo dhawow Boordkaaga 6D",
+    "dashboard_hero_subtitle": "Kani waa ciwaankaaga dhijitaalka ah ee rasmiga ah, oo u diiwaan gashan:"
   },
   // English (en)
   en: {
@@ -177,7 +179,9 @@ export const locales = {
     "delete_account_prompt": "Permanently delete your account.",
     "login_register_prompt": "Don't have an account?",
     "login_register_link": "Register now",
-    "toast_area_not_supported": "Service is only available within Somalia."
+    "toast_area_not_supported": "Service is only available within Somalia.",
+    "dashboard_hero_title": "Welcome to your 6D Dashboard",
+    "dashboard_hero_subtitle": "This is your official digital address, registered to:"
   },
   // Arabic (ar)
   ar: {
@@ -267,6 +271,8 @@ export const locales = {
     "delete_account_prompt": "احذف حسابك بشكل دائم.",
     "login_register_prompt": "ليس لديك حساب؟",
     "login_register_link": "سجل الآن",
-    "toast_area_not_supported": "الخدمة متاحة فقط داخل الصومال."
+    "toast_area_not_supported": "الخدمة متاحة فقط داخل الصومال.",
+    "dashboard_hero_title": "مرحباً بك في لوحة تحكم 6D الخاصة بك",
+    "dashboard_hero_subtitle": "هذا هو عنوانك الرقمي الرسمي، مسجل لـ:"
   }
 };

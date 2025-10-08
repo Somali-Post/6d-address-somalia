@@ -554,7 +554,7 @@ function transitionToLoggedInState(userData) {
     appState.user = userData;
 
     // --- Step 2: Populate all NON-MAP elements immediately ---
-    document.getElementById('dashboard-greeting').textContent = `${t('dashboard_welcome')} ${userData.full_name}!`;
+    document.getElementById('hero-user-name').textContent = userData.full_name;
     
     const dashboard6dCode = document.getElementById('dashboard-6d-code');
     if (dashboard6dCode && userData.six_d_code) {
@@ -575,18 +575,8 @@ function transitionToLoggedInState(userData) {
     document.getElementById('plaque-district-region').textContent = `${userData.district}, ${userData.region} ${userData.locality_suffix || ''}`.trim();
     document.getElementById('plaque-city-country').textContent = `${userData.city}, Somalia`;
 
-    const registeredToEl = document.getElementById('dashboard-registered-to');
-    if (registeredToEl && userData.registered_at) {
-        const registeredDate = new Date(userData.registered_at).toLocaleDateString();
-        registeredToEl.textContent = `${t('dashboard_registered_to')}: ${userData.full_name} (Since: ${registeredDate})`;
-    }
     console.log("Step 2: Dashboard text populated successfully.");
     
-    // --- Step 3: Wait for the map to be fully idle before performing map operations ---
-    google.maps.event.addListenerOnce(map, 'idle', () => {
-        // ... (The map logic remains the same)
-    });
-
     // --- Step 4: Update all other non-map UI elements immediately ---
     // ... (The rest of the function remains the same)
     
