@@ -733,13 +733,20 @@ function handleFindMyLocation() {
                 const lat = position.coords.latitude;
                 const lng = position.coords.longitude;
 
-                // --- START OF NEW CODE ---
+                // --- START OF IMPROVED CODE ---
+                // Check 1: Is it within the broad rectangle containing all of Somalia?
                 if (lat < SOMALIA_BOUNDS.minLat || lat > SOMALIA_BOUNDS.maxLat || lng < SOMALIA_BOUNDS.minLng || lng > SOMALIA_BOUNDS.maxLng) {
                     showToast('toast_area_not_supported');
                     switchInfoPanelView('initial'); // Reset the UI
                     return; // Stop processing
                 }
-                // --- END OF NEW CODE ---
+                // Check 2: Is it in the large, empty ocean area in the southeast?
+                if (lat < 4.5 && lng > 48.0) {
+                    showToast('toast_area_not_supported');
+                    switchInfoPanelView('initial'); // Reset the UI
+                    return; // Stop processing
+                }
+                // --- END OF IMPROVED CODE ---
 
                 const latLng = new google.maps.LatLng(lat, lng);
                 const accuracy = position.coords.accuracy;
@@ -757,7 +764,13 @@ async function processLocation(latLng, accuracy = null) {
     const lat = latLng.lat();
     const lng = latLng.lng();
 
+    // Check 1: Is it within the broad rectangle containing all of Somalia?
     if (lat < SOMALIA_BOUNDS.minLat || lat > SOMALIA_BOUNDS.maxLat || lng < SOMALIA_BOUNDS.minLng || lng > SOMALIA_BOUNDS.maxLng) {
+        showToast('toast_area_not_supported');
+        return; // Stop processing
+    }
+    // Check 2: Is it in the large, empty ocean area in the southeast? (This creates a more accurate boundary)
+    if (lat < 4.5 && lng > 48.0) {
         showToast('toast_area_not_supported');
         return; // Stop processing
     }
