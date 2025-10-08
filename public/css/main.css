@@ -578,6 +578,17 @@ input:-webkit-autofill:active {
     max-width: 500px;
     margin: 0 auto;
 }
+
+.content-card {
+    background-color: var(--component-bg);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 1.5rem; /* ADD THIS LINE */
+}
 .card-content { padding: 1.5rem; }
 .card-address-details { text-align: center; margin-bottom: 1.5rem; }
 
@@ -694,12 +705,11 @@ input:-webkit-autofill:active {
 
 /* --- Settings View Styles --- */
 #view-settings {
-    padding: 1.5rem;
     overflow-y: auto;
 }
 .settings-header h1 {
     font-size: 1.75rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem; /* MODIFIED LINE */
 }
 .settings-section {
     margin-bottom: 2.5rem;
@@ -707,19 +717,17 @@ input:-webkit-autofill:active {
 .settings-section h2 {
     font-size: 1.2rem;
     color: var(--text-secondary);
-    border-bottom: 1px solid var(--border-color);
     padding-bottom: 0.75rem;
     margin-bottom: 1.5rem;
 }
 
 /* --- History View Styles --- */
 #view-history {
-    padding: 1.5rem;
     overflow-y: auto;
 }
 .history-header h1 {
     font-size: 1.75rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem; /* MODIFIED LINE */
 }
 .history-content .loading-message {
     color: var(--text-secondary);

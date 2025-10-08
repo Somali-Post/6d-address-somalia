@@ -157,7 +157,8 @@
 
         <!-- View 3: The Settings (This is the new, empty container) -->
         <div id="view-settings" class="main-view">
-            <div class="settings-header">
+            <div class="content-card">
+                <div class="settings-header">
                 <h1 data-i18n-key="settings_title">Settings</h1>
             </div>
             <div class="settings-content">
@@ -206,16 +207,19 @@
                     <p data-i18n-key="delete_account_prompt">Permanently delete your account.</p>
                 </div>
             </div>
+            </div>
         </div>
 
         <!-- View 4: The History -->
         <div id="view-history" class="main-view">
-            <div class="history-header">
+            <div class="content-card">
+                <div class="history-header">
                 <h1 data-i18n-key="nav_history">Address History</h1>
             </div>
             <div id="history-content" class="history-content">
                 <!-- History items will be dynamically inserted here -->
                 <p class="loading-message" data-i18n-key="history_loading">Loading history...</p>
+            </div>
             </div>
         </div>
     </main>
