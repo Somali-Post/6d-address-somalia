@@ -620,3 +620,9 @@ export const somaliAdministrativeHierarchy = {
         }
     }
 };
+export const SOMALIA_BOUNDS = {
+  minLat: -1.68, // Southernmost point
+  maxLat: 12.0,  // Northernmost point
+  minLng: 41.0,  // Westernmost point
+  maxLng: 51.4   // Easternmost point
+};
