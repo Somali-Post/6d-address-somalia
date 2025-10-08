@@ -516,6 +516,7 @@ async function checkSession() {
         }
 
         const responseData = await response.json();
+        console.log("checkSession responseData:", responseData); // <-- Add this line
         
         // --- START OF FIX ---
         // Defensively get the user object, whether it's nested or the root of the response.
