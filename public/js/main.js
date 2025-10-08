@@ -554,7 +554,6 @@ function transitionToLoggedInState(userData) {
     appState.user = userData;
 
     // --- Step 2: Populate all NON-MAP elements immediately ---
-    document.getElementById('hero-user-name').textContent = userData.full_name;
     
     const dashboard6dCode = document.getElementById('dashboard-6d-code');
     if (dashboard6dCode && userData.six_d_code) {

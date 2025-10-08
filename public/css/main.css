@@ -569,30 +569,6 @@ input:-webkit-autofill:active {
     padding: 1.5rem;
     overflow-y: auto;
 }
-.dashboard-header {
-    text-align: center;
-    padding: 1rem 1rem 0 1rem;
-}
-
-.hero-title {
-    font-size: 1.75rem;
-    font-weight: 600;
-    margin: 0 0 0.5rem 0;
-    color: var(--text-primary);
-}
-
-.hero-subtitle {
-    font-size: 1rem;
-    color: var(--text-secondary);
-    margin: 0;
-}
-
-.hero-user-name {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-top: 0.25rem;
-}
 .address-card {
     background-color: var(--component-bg);
     border-radius: 16px;
@@ -600,10 +576,10 @@ input:-webkit-autofill:active {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
     overflow: hidden;
     max-width: 500px;
-    margin: 1.5rem auto 0 auto;
+    margin: 0 auto;
 }
 .card-content { padding: 1.5rem; }
-.card-address-details { text-align: center; margin-bottom: 2rem; }
+.card-address-details { text-align: center; margin-bottom: 1.5rem; }
 
 #dashboard-6d-code.code-pill {
     display: inline-block;
@@ -625,6 +601,29 @@ input:-webkit-autofill:active {
 #dashboard-registered-to { font-size: 0.9rem; color: var(--text-secondary); margin-top: 1rem; }
 .card-actions { display: flex; flex-direction: column; gap: 0.75rem; }
 .update-info { text-align: center; font-size: 0.8rem; color: var(--text-secondary); padding: 0.75rem; margin-top: 1rem; background-color: rgba(0,0,0,0.2); border-radius: 8px; }
+
+.card-hero-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+}
+
+.card-hero-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0;
+    max-width: 300px; /* Constrain line width */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.card-divider {
+    border: none;
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 1.5rem 0;
+}
 
 
 /* --- Login Modal Styles (Consistent with OTP Modal) --- */
