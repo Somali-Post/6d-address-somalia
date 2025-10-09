@@ -705,6 +705,7 @@ input:-webkit-autofill:active {
 
 /* --- Settings View Styles --- */
 #view-settings {
+    padding: 1.5rem; /* RE-ADD THIS LINE */
     overflow-y: auto;
 }
 .settings-header h1 {
@@ -723,6 +724,7 @@ input:-webkit-autofill:active {
 
 /* --- History View Styles --- */
 #view-history {
+    padding: 1.5rem; /* RE-ADD THIS LINE */
     overflow-y: auto;
 }
 .history-header h1 {
