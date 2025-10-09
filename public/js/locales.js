@@ -181,7 +181,7 @@ export const locales = {
     "login_register_prompt": "Don't have an account?",
     "login_register_link": "Register now",
     "toast_area_not_supported": "Service is only available within Somalia.",
-    "dashboard_hero_title": "Welcome to your 6D Dashboard",
+    "dashboard_hero_title": "Welcome to your Official 6D Dashboard",
     "dashboard_hero_subtitle": "This is your official digital address, registered to:",
     "update_available_on": "Next update available on {date}"
   },
