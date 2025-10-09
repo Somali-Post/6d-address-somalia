@@ -56,18 +56,8 @@
     </style>
 </head>
 <body>
-    <!-- NEW LOADER HTML -->
-    <div id="loader-wrapper" class="loader-wrapper">
-        <span class="loader"><span></span></span>
-        <div class="loader-text" data-i18n-key="loader_text">
-            Loading 6D Somalia
-            <span class="dots">
-                <span class="dot red">.</span>
-                <span class="dot green">.</span>
-                <span class="dot blue">.</span>
-            </span>
-        </div>
-    </div>
+    <canvas id="animated-background"></canvas>
+    <!-- ... rest of your application HTML ... -->
     <main>
         <!-- View 1: The Map (Now wrapped in a container) -->
         <div id="view-map" class="main-view active">
@@ -351,9 +341,9 @@
     </div>
     <!-- END OF NEW ELEMENTS -->
 
-    <script src="./js/firebase.js?v=2.1" type="module"></script>
-    <script src="./js/animated-background.js?v=2.1" type="module"></script>
-    <script src="./js/main.js?v=2.1" type="module"></script>
+    <!-- ... other scripts ... -->
+    <script src="./js/animated-background.js" type="module"></script>
+    <script src="./js/main.js" type="module"></script>
 
     <!-- The Toast Notification Component -->
     <div id="toast-notification" class="toast"></div>

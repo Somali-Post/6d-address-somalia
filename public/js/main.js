@@ -7,6 +7,7 @@ import * as MapCore from './map-core.js';
 import { setupRecaptcha, sendOtp, verifyOtp } from './firebase.js'; // Import Firebase functions
 import { locales } from './locales.js';
 import { safeJsonParse } from './json-sanitizer.js'; // Import the safe JSON parser
+import { AnimatedBackground } from './animated-background.js';
 
 // --- State ---
 let map, geocoder, placesService;
@@ -22,6 +23,7 @@ let appState = {
     isUpdateMode: false, // ADD THIS LINE
     currentLanguage: 'so', // Default to Somali
     authFlow: null, // 'login' or 'register'
+    animatedBgInstance: null,
 };
 let resendTimerInterval = null;
 
@@ -112,6 +114,19 @@ async function init() {
         }
         // --- END OF NEW LOGIC ---
 
+        // --- Initialize Animated Background ---
+        const isLightMode = document.documentElement.classList.contains('light-mode');
+        const background = new AnimatedBackground({
+            canvasId: 'animated-background',
+            squareSize: 40,
+            speed: 0.3,
+            direction: 'diagonal',
+            borderColor: isLightMode ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)',
+            hoverFillColor: isLightMode ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.05)'
+        });
+        background.init();
+        appState.animatedBgInstance = background; // Store the instance
+
     } catch (error) {
         console.error("Initialization Error:", error);
         document.body.innerHTML = `<div>Error: Could not load the map.</div>`;
@@ -169,6 +184,14 @@ function applyTheme(theme) {
 function setTheme(theme) {
     applyTheme(theme);
     localStorage.setItem('preferredTheme', theme);
+
+    if (appState.animatedBgInstance) {
+        const isLight = theme === 'light';
+        appState.animatedBgInstance.updateColors({
+            borderColor: isLight ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)',
+            hoverFillColor: isLight ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.05)'
+        });
+    }
 }
 
 function addEventListeners() {

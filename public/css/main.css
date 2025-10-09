@@ -823,3 +823,16 @@ input:checked + .slider {
 input:checked + .slider:before {
     transform: translateX(22px);
 }
+#animated-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+
+body {
+    /* Ensure this has no background-color, or set it to transparent */
+    background-color: transparent;
+}

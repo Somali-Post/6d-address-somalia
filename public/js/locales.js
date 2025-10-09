@@ -88,7 +88,7 @@ export const locales = {
     "login_register_prompt": "Akoon ma lihid?",
     "login_register_link": "Isdiiwaangeli hadda",
     "toast_area_not_supported": "Adeeggu wuxuu ku kooban yahay gudaha Soomaaliya oo keliya.",
-    "dashboard_hero_title": "Ku soo dhawow Boordkaaga 6D",
+    "dashboard_hero_title": "Ku soo dhawow Dashboard-kaaga 6D",
     "dashboard_hero_subtitle": "Kani waa ciwaankaaga dhijitaalka ah ee rasmiga ah, oo u diiwaan gashan:",
     "update_available_on": "Cusboonaysiinta xigta waxay diyaar noqon doontaa {date}"
   },
