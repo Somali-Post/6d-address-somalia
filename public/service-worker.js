@@ -54,6 +54,13 @@ self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // Only handle GET requests for caching. The Cache API does not
+  // support caching of POST/PUT/PATCH/DELETE requests.
+  if (request.method !== 'GET') {
+    // Let the network handle non-GET requests without touching the cache
+    return; // do not call respondWith; default fetch proceeds
+  }
+
   // Use Network First for HTML, CSS, and JS files from our origin
   if (request.mode === 'navigate' || (url.origin === self.location.origin && (url.pathname.endsWith('.css') || url.pathname.endsWith('.js')))) {
     event.respondWith(
@@ -63,6 +70,7 @@ self.addEventListener('fetch', event => {
           const responseToCache = response.clone();
           caches.open(CACHE_NAME)
             .then(cache => {
+              // Cache only GET requests
               cache.put(request, responseToCache);
             });
           return response;
