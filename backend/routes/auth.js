@@ -9,11 +9,14 @@ router.post('/firebase', async (req, res) => {
     const { token, fullName, address } = req.body;
     if (!token) return res.status(401).json({ error: 'ID token is required.' });
 
+    let transactionStarted = false;
+
     try {
         const decodedToken = await admin.auth().verifyIdToken(token);
         const { uid, phone_number } = decodedToken;
 
         await db.query('BEGIN');
+        transactionStarted = true;
 
         let userResult = await db.query('SELECT * FROM users WHERE id = $1', [uid]);
         let user = userResult.rows[0];
@@ -21,6 +24,7 @@ router.post('/firebase', async (req, res) => {
         if (!user) {
             if (!fullName) {
                 await db.query('ROLLBACK');
+                transactionStarted = false;
                 return res.status(400).json({ error: 'Full name is required for new user registration.' });
             }
             const newUserResult = await db.query(
@@ -52,6 +56,7 @@ router.post('/firebase', async (req, res) => {
         // --- END OF FIX ---
 
         await db.query('COMMIT');
+        transactionStarted = false;
 
         // Fetch the complete, final user profile to return to the client
         const fullProfileResult = await db.query(`
@@ -75,7 +80,13 @@ router.post('/firebase', async (req, res) => {
         res.status(200).json({ token: sessionToken, user: fullUserProfile });
 
     } catch (error) {
-        await db.query('ROLLBACK');
+        if (transactionStarted) {
+            try {
+                await db.query('ROLLBACK');
+            } catch (rollbackError) {
+                console.error('Database rollback failed:', rollbackError);
+            }
+        }
         console.error('Authentication process failed:', error);
         res.status(500).json({ error: 'Authentication failed.' });
     }
