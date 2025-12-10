@@ -6,6 +6,28 @@ const isLocal = window.location.hostname === 'localhost' || window.location.host
 // For local development, use http://localhost:3001. For production, use a relative path.
 export const API_BASE_URL = "https://d-address-somalia-api.onrender.com";
 
+// --- Demo mode toggle ---
+const urlParams = new URLSearchParams(window.location.search);
+const demoParam = urlParams.get('demo');
+try {
+    if (demoParam === '1') {
+        localStorage.setItem('demoMode', 'true');
+    } else if (demoParam === '0') {
+        localStorage.removeItem('demoMode');
+    }
+} catch (error) {
+    console.warn('Unable to persist the demo flag', error);
+}
+
+export const DEMO_MODE = (() => {
+    try {
+        return localStorage.getItem('demoMode') === 'true';
+    } catch (error) {
+        console.warn('Demo mode unavailable', error);
+        return false;
+    }
+})();
+
 // This is our authoritative source for UI dropdowns.
 export const somaliAdministrativeHierarchy = {
     "Awdal": {

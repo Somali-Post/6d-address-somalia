@@ -1,7 +1,7 @@
 'use strict';
 console.log("Executing main.js version 2");
 
-import { GOOGLE_MAPS_API_KEY, somaliAdministrativeHierarchy, API_BASE_URL, SOMALIA_BOUNDS } from './config.js';
+import { GOOGLE_MAPS_API_KEY, somaliAdministrativeHierarchy, API_BASE_URL, SOMALIA_BOUNDS, DEMO_MODE } from './config.js';
 import { loadGoogleMapsAPI } from './utils.js';
 import * as MapCore from './map-core.js';
 import { setupRecaptcha, sendOtp, verifyOtp } from './firebase.js'; // Import Firebase functions
@@ -24,6 +24,7 @@ let appState = {
     currentLanguage: 'so', // Default to Somali
     authFlow: null, // 'login' or 'register'
     animatedBgInstance: null,
+    pendingPhoneNumber: null,
 };
 let resendTimerInterval = null;
 
@@ -82,6 +83,122 @@ const DOM = {
     dashboardShareBtn: document.getElementById('dashboard-share-btn'),
     dashboardUpdateInfo: document.getElementById('dashboard-update-info'),
 };
+
+const DEMO_CONSTANTS = {
+    sessionToken: 'demo-session-token',
+    userStorageKey: 'demoUserProfile',
+    historyStorageKey: 'demoAddressHistory'
+};
+
+function loadDemoUser() {
+    return safeJsonParse(localStorage.getItem(DEMO_CONSTANTS.userStorageKey));
+}
+
+function saveDemoUser(user) {
+    localStorage.setItem(DEMO_CONSTANTS.userStorageKey, JSON.stringify(user));
+}
+
+function loadDemoHistory() {
+    return safeJsonParse(localStorage.getItem(DEMO_CONSTANTS.historyStorageKey)) || [];
+}
+
+function saveDemoHistory(history) {
+    localStorage.setItem(DEMO_CONSTANTS.historyStorageKey, JSON.stringify(history));
+}
+
+function addDemoHistoryEntry(address) {
+    const history = loadDemoHistory();
+    const now = new Date().toISOString();
+    history.unshift({
+        id: `demo-${Date.now()}`,
+        six_d_code: address.sixDCode || address.six_d_code,
+        region: address.region || '',
+        city: address.city || '',
+        district: address.district || '',
+        neighborhood: address.neighborhood || '',
+        registered_at: now,
+        archived_at: now
+    });
+    saveDemoHistory(history.slice(0, 6));
+}
+
+async function demoAuthenticate(requestBody) {
+    let user = loadDemoUser();
+    const now = new Date();
+    if (appState.authFlow === 'register' || !user) {
+        if (!requestBody.address) {
+            throw new Error('Missing address data for demo registration.');
+        }
+        const registeredAt = new Date(now.getTime() - (31 * 24 * 60 * 60 * 1000)).toISOString(); // keep updates unlocked
+        user = {
+            id: 'demo-user',
+            full_name: requestBody.fullName || 'Demo User',
+            phone_number: appState.pendingPhoneNumber || '',
+            six_d_code: requestBody.address.sixDCode,
+            region: requestBody.address.region,
+            city: requestBody.address.city,
+            district: requestBody.address.district,
+            neighborhood: requestBody.address.neighborhood || '',
+            locality_suffix: requestBody.address.localitySuffix || '',
+            lat: requestBody.address.lat,
+            lng: requestBody.address.lng,
+            registered_at: registeredAt,
+            updated_at: now.toISOString()
+        };
+        saveDemoUser(user);
+        addDemoHistoryEntry({
+            sixDCode: user.six_d_code,
+            region: user.region,
+            city: user.city,
+            district: user.district,
+            neighborhood: user.neighborhood
+        });
+    } else {
+        if (!user) {
+            throw new Error('No existing demo user. Please register first.');
+        }
+        if (appState.pendingPhoneNumber && user.phone_number && user.phone_number !== appState.pendingPhoneNumber) {
+            throw new Error('Phone number does not match demo profile.');
+        }
+        user.updated_at = now.toISOString();
+        saveDemoUser(user);
+    }
+
+    localStorage.setItem('sessionToken', DEMO_CONSTANTS.sessionToken);
+    return { token: DEMO_CONSTANTS.sessionToken, user };
+}
+
+function demoUpdateProfileName(newFullName) {
+    const user = loadDemoUser();
+    if (!user) throw new Error('No demo profile found.');
+    user.full_name = newFullName;
+    user.updated_at = new Date().toISOString();
+    saveDemoUser(user);
+    return user;
+}
+
+async function demoUpdateAddress(updatedAddress) {
+    const user = loadDemoUser();
+    if (!user) throw new Error('No demo profile found.');
+    addDemoHistoryEntry({
+        sixDCode: user.six_d_code,
+        region: user.region,
+        city: user.city,
+        district: user.district,
+        neighborhood: user.neighborhood
+    });
+    user.six_d_code = updatedAddress.sixDCode;
+    user.region = updatedAddress.region;
+    user.city = updatedAddress.city;
+    user.district = updatedAddress.district;
+    user.neighborhood = updatedAddress.neighborhood || '';
+    user.locality_suffix = updatedAddress.localitySuffix || '';
+    user.lat = updatedAddress.lat;
+    user.lng = updatedAddress.lng;
+    user.updated_at = new Date().toISOString();
+    saveDemoUser(user);
+    return user;
+}
 
 // --- Helper Functions ---
 const normalize = (str) => (str || '').toLowerCase().replace(/ region| city| district/g, '').trim();
@@ -308,6 +425,31 @@ async function renderHistory() {
 
     DOM.historyContent.innerHTML = `<p class="loading-message">${t('history_loading')}</p>`;
 
+    if (DEMO_MODE) {
+        const history = loadDemoHistory();
+        if (!history.length) {
+            DOM.historyContent.innerHTML = `<p class="loading-message">${t('history_empty')}</p>`;
+            return;
+        }
+        DOM.historyContent.innerHTML = '';
+        history.forEach(item => {
+            const itemEl = document.createElement('div');
+            itemEl.className = 'history-item';
+            const registeredDate = new Date(item.registered_at).toLocaleDateString();
+            const archivedDate = new Date(item.archived_at).toLocaleDateString();
+            const addressParts = [item.neighborhood, item.district, item.city, item.region].filter(Boolean).join(', ');
+            itemEl.innerHTML = `
+                <div class="history-item-header">
+                    <span class="history-item-code">${item.six_d_code}</span>
+                    <span class="history-item-dates">${t('history_used')}: ${registeredDate} - ${archivedDate}</span>
+                </div>
+                <p class="history-item-address">${addressParts}</p>
+            `;
+            DOM.historyContent.appendChild(itemEl);
+        });
+        return;
+    }
+
     try {
         const response = await fetch(`${API_BASE_URL}/api/users/me/history`, {
             headers: { 'Authorization': `Bearer ${appState.sessionToken}` }
@@ -354,6 +496,18 @@ async function handleProfileUpdate(event) {
     const newFullName = DOM.profileNameInput.value.trim();
     if (newFullName === appState.user.full_name) {
         showToast("toast_no_changes");
+        return;
+    }
+
+    if (DEMO_MODE) {
+        try {
+            const updatedUser = demoUpdateProfileName(newFullName);
+            appState.user = updatedUser;
+            showToast("toast_profile_updated");
+        } catch (error) {
+            console.error("Demo profile update failed:", error);
+            showToast("toast_profile_update_error");
+        }
         return;
     }
 
@@ -482,6 +636,7 @@ async function handleLoginSubmit(event) {
 
     try {
         const fullPhoneNumber = `+252${phoneNumber}`;
+        appState.pendingPhoneNumber = fullPhoneNumber;
         appState.authFlow = 'login'; // Set the context to login
         confirmationResult = await sendOtp(fullPhoneNumber);
         console.log("OTP sent successfully for login.");
@@ -517,6 +672,20 @@ async function checkSession() {
     if (!token) {
         console.log("No session token found. User is logged out.");
         updateAuthLink();
+        return;
+    }
+
+    if (DEMO_MODE) {
+        const demoUser = loadDemoUser();
+        if (token === DEMO_CONSTANTS.sessionToken && demoUser) {
+            console.log("Demo mode active. Restoring session from localStorage.");
+            appState.sessionToken = DEMO_CONSTANTS.sessionToken;
+            transitionToLoggedInState(demoUser);
+        } else {
+            console.log("Demo mode token missing or user not found. Clearing session.");
+            localStorage.removeItem('sessionToken');
+            updateAuthLink();
+        }
         return;
     }
 
@@ -974,16 +1143,20 @@ async function handlePrimaryInfoPanelAction() {
         // --- UPDATE FLOW ---
         if (confirm(`${t('confirm_update_address_1')}\n\n${currentAddress.sixDCode}\n${currentAddress.district}, ${currentAddress.region}`)) {
             try {
-                const response = await fetch(`${API_BASE_URL}/api/users/me/address`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${appState.sessionToken}`
-                    },
-                    body: JSON.stringify(currentAddress)
-                });
+                if (DEMO_MODE) {
+                    await demoUpdateAddress(currentAddress);
+                } else {
+                    const response = await fetch(`${API_BASE_URL}/api/users/me/address`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${appState.sessionToken}`
+                        },
+                        body: JSON.stringify(currentAddress)
+                    });
 
-                if (!response.ok) throw new Error('Failed to update address.');
+                    if (!response.ok) throw new Error('Failed to update address.');
+                }
 
                 showToast("toast_address_updated");
                 appState.isUpdateMode = false; // Exit update mode
@@ -1082,6 +1255,7 @@ async function handleRegistrationSubmit(event) {
     try {
         // This function is imported from firebase.js
         appState.authFlow = 'register'; // Set the context to registration
+        appState.pendingPhoneNumber = phoneNumber;
         confirmationResult = await sendOtp(phoneNumber);
         console.log("OTP sent successfully. Confirmation result stored.");
         
@@ -1140,23 +1314,30 @@ async function handleOtpSubmit(event) {
         }
 
         // Call our SINGLE, UNIFIED auth endpoint for both login and registration.
-        const authResponse = await fetch(`${API_BASE_URL}/api/auth/firebase`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${idToken}` // Still needed for middleware
-            },
-            body: JSON.stringify(requestBody),
-        });
+        let authData;
+        if (DEMO_MODE) {
+            authData = await demoAuthenticate(requestBody);
+        } else {
+            const authResponse = await fetch(`${API_BASE_URL}/api/auth/firebase`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${idToken}` // Still needed for middleware
+                },
+                body: JSON.stringify(requestBody),
+            });
 
-        if (!authResponse.ok) {
-            const errorData = await authResponse.json();
-            throw new Error(errorData.error || 'Backend authentication failed.');
+            if (!authResponse.ok) {
+                const errorData = await authResponse.json();
+                throw new Error(errorData.error || 'Backend authentication failed.');
+            }
+            
+            authData = await authResponse.json();
         }
         
-        const authData = await authResponse.json();
         localStorage.setItem('sessionToken', authData.token);
         appState.sessionToken = authData.token;
+        appState.pendingPhoneNumber = null;
         console.log("Backend session token received.");
 
         toggleOtpModal(false);
